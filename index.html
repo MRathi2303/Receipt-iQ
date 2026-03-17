@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReceiptIQ — Intelligent Receipt Processing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="navbar">
+  <a class="brand" href="#">
+    <div class="brand-logo">🧾</div>
+    <span class="brand-name">Receipt<span class="brand-accent">IQ</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#upload-s">Upload</a></li>
+    <li><a href="#how-s">How it Works</a></li>
+    <li><a href="#dash-s">Dashboard</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <div class="nav-right">
+    <a class="btn-nav-ghost" href="#">Sign In</a>
+    <a class="btn-nav-primary" href="#upload-s">Try Free →</a>
+  </div>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero">
+  <div class="hero-blob1"></div>
+  <div class="hero-blob2"></div>
+  <div class="hero-blob3"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="pulse-dot"></div>
+      Powered by AWS Textract + AI Classification
+    </div>
+    <h1 class="hero-title">
+      Turn receipts into<br/>
+      <span class="hero-accent-text">intelligent data</span>
+    </h1>
+    <p class="hero-sub">
+      Upload any receipt image or PDF. Our serverless pipeline extracts every detail,
+      classifies your spending, and emails you a clean summary — in under 5 seconds.
+    </p>
+    <div class="hero-cta">
+      <a class="btn-hero-primary" href="#upload-s">
+        Upload a Receipt <span class="btn-arrow">→</span>
+      </a>
+      <a class="btn-hero-ghost" href="#how-s">
+        See how it works ↓
+      </a>
+    </div>
+    <div class="hero-stats-wrap">
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="stat-num teal">50k+</span>
+          <span class="stat-lbl">Receipts Processed</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-num">99.2%</span>
+          <span class="stat-lbl">OCR Accuracy</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-num">&lt;5s</span>
+          <span class="stat-lbl">Processing Time</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ TRUST BAR ══════════ -->
+<div class="trust-bar">
+  <div class="trust-item"><span>🔒</span> SOC2 Compliant</div>
+  <div class="trust-item"><span>⚡</span> AWS Serverless</div>
+  <div class="trust-item"><span>🤖</span> Amazon Textract OCR</div>
+  <div class="trust-item"><span>📧</span> Instant Email Alerts</div>
+  <div class="trust-item"><span>🌍</span> Multi-region Support</div>
+</div>
+
+<!-- ══════════ UPLOAD ══════════ -->
+<section class="section" id="upload-s">
+  <div class="section-inner">
+    <div class="section-eyebrow">✦ Upload</div>
+    <h2 class="section-title">Process your receipt</h2>
+    <p class="section-sub">Drag, drop, done. Supports JPG · PNG · PDF up to 10 MB</p>
+
+    <div class="upload-wrap">
+      <div class="upload-card">
+        <div class="upload-card-header">
+          <div class="upload-header-title">📤 Upload Receipt</div>
+          <div class="upload-header-sub">Encrypted & securely stored in AWS S3</div>
+        </div>
+        <div class="upload-body">
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <div class="drop-icon-wrap">📄</div>
+            <div class="drop-title">Drag & drop your receipt</div>
+            <div class="drop-hint">or click anywhere to browse files</div>
+            <button class="btn-choose" onclick="event.stopPropagation();document.getElementById('fileInput').click()">
+              📂 Choose File
+            </button>
+            <input type="file" id="fileInput" accept="image/*,.pdf" hidden />
+          </div>
+          <div class="file-chip" id="filePreview" style="display:none">
+            <span class="file-chip-icon">📎</span>
+            <span class="file-chip-name" id="fileName">receipt.jpg</span>
+            <button class="file-chip-remove" onclick="clearFile()">✕</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="emailInput">📧 Email for notification</label>
+            <input class="form-control" type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
+            <div class="form-hint">We'll send your extracted receipt summary here</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="categoryInput">🏷️ Expense category</label>
+            <select class="form-control" id="categoryInput">
+              <option value="">✨ Auto-detect</option>
+              <option value="food">🍕 Food &amp; Dining</option>
+              <option value="travel">✈️ Travel</option>
+              <option value="utilities">💡 Utilities</option>
+              <option value="shopping">🛍️ Shopping</option>
+              <option value="medical">🏥 Medical</option>
+              <option value="other">📦 Other</option>
+            </select>
+          </div>
+          <button class="btn-submit" id="submitBtn" onclick="submitReceipt()">
+            <span id="submitText">Process Receipt</span>
+            <span class="submit-arrow" id="submitArrow">→</span>
+            <span class="spinner" id="submitSpinner" style="display:none"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="upload-side">
+        <div class="side-card">
+          <div class="side-card-header">
+            <div class="side-icon teal-bg">🤖</div>
+            <div>
+              <div class="side-card-title">AI-Powered Extraction</div>
+              <div class="side-card-sub">Amazon Textract + Classification</div>
+            </div>
+          </div>
+          <div class="feature-list">
+            <div class="feature-item"><div class="fcheck">✓</div>Merchant name &amp; date</div>
+            <div class="feature-item"><div class="fcheck">✓</div>Total &amp; tax amounts</div>
+            <div class="feature-item"><div class="fcheck">✓</div>Line items extraction</div>
+            <div class="feature-item"><div class="fcheck">✓</div>Auto category detection</div>
+            <div class="feature-item"><div class="fcheck">✓</div>Confidence scoring</div>
+          </div>
+        </div>
+        <div class="side-card">
+          <div class="side-card-header">
+            <div class="side-icon gold-bg">⚡</div>
+            <div>
+              <div class="side-card-title">Serverless Pipeline</div>
+              <div class="side-card-sub">7 automated AWS steps</div>
+            </div>
+          </div>
+          <div class="feature-list">
+            <div class="feature-item"><div class="fcheck">✓</div>S3 storage + event trigger</div>
+            <div class="feature-item"><div class="fcheck">✓</div>Lambda auto-scales to any load</div>
+            <div class="feature-item"><div class="fcheck">✓</div>DynamoDB structured results</div>
+            <div class="feature-item"><div class="fcheck">✓</div>SNS + SES email notification</div>
+          </div>
+        </div>
+        <div class="side-card">
+          <div class="side-card-header">
+            <div class="side-icon purple-bg">🔒</div>
+            <div>
+              <div class="side-card-title">Enterprise Security</div>
+              <div class="side-card-sub">Bank-grade encryption</div>
+            </div>
+          </div>
+          <div class="feature-list">
+            <div class="feature-item"><div class="fcheck">✓</div>AES-256 S3 encryption</div>
+            <div class="feature-item"><div class="fcheck">✓</div>Private bucket — no public access</div>
+            <div class="feature-item"><div class="fcheck">✓</div>API key auth on every request</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-card" id="progressCard" style="display:none">
+      <div class="progress-header">
+        <div class="progress-spinner-wrap"><div class="progress-spin"></div></div>
+        <div>
+          <div class="progress-title">Processing your receipt…</div>
+          <div class="progress-sub">Running AI extraction pipeline</div>
+        </div>
+      </div>
+      <div class="steps-row">
+        <div class="step-node"><div class="step-circle" id="sc1">📤</div><div class="step-lbl" id="sl1">Upload</div></div>
+        <div class="step-conn"><div class="step-fill" id="cf1"></div></div>
+        <div class="step-node"><div class="step-circle" id="sc2">🔗</div><div class="step-lbl" id="sl2">API</div></div>
+        <div class="step-conn"><div class="step-fill" id="cf2"></div></div>
+        <div class="step-node"><div class="step-circle" id="sc3">🪣</div><div class="step-lbl" id="sl3">S3</div></div>
+        <div class="step-conn"><div class="step-fill" id="cf3"></div></div>
+        <div class="step-node"><div class="step-circle" id="sc4">⚡</div><div class="step-lbl" id="sl4">Trigger</div></div>
+        <div class="step-conn"><div class="step-fill" id="cf4"></div></div>
+        <div class="step-node"><div class="step-circle" id="sc5">🤖</div><div class="step-lbl" id="sl5">OCR+AI</div></div>
+        <div class="step-conn"><div class="step-fill" id="cf5"></div></div>
+        <div class="step-node"><div class="step-circle" id="sc6">💾</div><div class="step-lbl" id="sl6">DB</div></div>
+        <div class="step-conn"><div class="step-fill" id="cf6"></div></div>
+        <div class="step-node"><div class="step-circle" id="sc7">📧</div><div class="step-lbl" id="sl7">Email</div></div>
+      </div>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+      <div class="progress-pct" id="progressPct">0%</div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-card" id="resultCard" style="display:none">
+      <div class="result-success-header">
+        <div class="result-check-circle">✅</div>
+        <div>
+          <div class="result-success-title">Receipt Processed!</div>
+          <div class="result-success-sub">All data extracted and saved to your account</div>
+        </div>
+      </div>
+      <div class="result-fields">
+        <div class="result-field"><div class="rf-label">Merchant</div><div class="rf-val" id="resMerchant">—</div></div>
+        <div class="result-field"><div class="rf-label">Date</div><div class="rf-val" id="resDate">—</div></div>
+        <div class="result-field"><div class="rf-label">Total Amount</div><div class="rf-val big" id="resTotal">—</div></div>
+        <div class="result-field"><div class="rf-label">Tax</div><div class="rf-val" id="resTax">—</div></div>
+        <div class="result-field"><div class="rf-label">Category</div><div class="rf-val" id="resCategory">—</div></div>
+        <div class="result-field"><div class="rf-label">AI Confidence</div><div class="rf-val" id="resConfidence">—</div></div>
+      </div>
+      <div class="result-email-note">📬 Summary emailed to <strong id="resEmail">your email</strong></div>
+      <button class="btn-another" onclick="resetForm()">+ Process Another Receipt</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT WORKS ══════════ -->
+<section class="section section-alt" id="how-s">
+  <div class="section-inner">
+    <div class="section-eyebrow">✦ Pipeline</div>
+    <h2 class="section-title">How it Works</h2>
+    <p class="section-sub">7 serverless AWS steps — fully automated, zero infrastructure to manage</p>
+    <div class="pipeline-grid">
+      <div class="pipe-card"><div class="pipe-num">Step 01</div><div class="pipe-icon-wrap">📤</div><h4>User Uploads</h4><p>File + email via web UI</p></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-card"><div class="pipe-num">Step 02</div><div class="pipe-icon-wrap">🔗</div><h4>REST API</h4><p>Secure multipart POST</p></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-card"><div class="pipe-num">Step 03</div><div class="pipe-icon-wrap">🪣</div><h4>S3 Storage</h4><p>Structured bucket path</p></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-card"><div class="pipe-num">Step 04</div><div class="pipe-icon-wrap">⚡</div><h4>S3 Trigger</h4><p>ObjectCreated → Lambda</p></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-card"><div class="pipe-num">Step 05</div><div class="pipe-icon-wrap">🤖</div><h4>OCR + AI</h4><p>Textract + classify</p></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-card"><div class="pipe-num">Step 06</div><div class="pipe-icon-wrap">💾</div><h4>DynamoDB</h4><p>Structured persistence</p></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-card"><div class="pipe-num">Step 07</div><div class="pipe-icon-wrap">📧</div><h4>SNS → SES</h4><p>Branded email alert</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<section class="section" id="dash-s">
+  <div class="section-inner">
+    <div class="section-eyebrow">✦ Dashboard</div>
+    <h2 class="section-title">Recent Receipts</h2>
+    <p class="section-sub">All your processed receipts — searchable, filterable, exportable</p>
+    <div class="dash-summary">
+      <div class="summary-card sc-teal"><div class="summary-icon si-teal">🧾</div><div class="summary-val">248</div><div class="summary-lbl">Total Receipts</div><div class="summary-trend">↑ 12% this month</div></div>
+      <div class="summary-card sc-gold"><div class="summary-icon si-gold">💰</div><div class="summary-val">$4,820</div><div class="summary-lbl">Total Spend</div><div class="summary-trend">↑ 8% this month</div></div>
+      <div class="summary-card sc-purple"><div class="summary-icon si-purple">🏷️</div><div class="summary-val">6</div><div class="summary-lbl">Categories</div></div>
+      <div class="summary-card sc-coral"><div class="summary-icon si-coral">🎯</div><div class="summary-val">97.4%</div><div class="summary-lbl">Avg Confidence</div></div>
+    </div>
+    <div class="dash-toolbar">
+      <div class="dash-search-wrap">
+        <span class="dash-search-icon">🔍</span>
+        <input class="dash-search" type="search" placeholder="Search merchant, category, amount…" />
+      </div>
+      <select class="dash-filter">
+        <option>All Categories</option>
+        <option>🍕 Food</option><option>✈️ Travel</option><option>💡 Utilities</option><option>🏥 Medical</option>
+      </select>
+      <button class="btn-export">📊 Export CSV</button>
+    </div>
+    <div class="table-shell">
+      <table class="receipts-table">
+        <thead>
+          <tr><th>Merchant</th><th>Date</th><th>Category</th><th>Total</th><th>Confidence</th><th>Status</th></tr>
+        </thead>
+        <tbody id="receiptTableBody">
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-avatar ma-teal">SC</div><div><div class="merchant-name">Starbucks Coffee</div><div class="merchant-id">DOC-001</div></div></div></td>
+            <td>Dec 1, 2024</td><td><span class="badge badge-food">🍕 Food</span></td><td><strong>$8.75</strong></td>
+            <td><div class="conf-bar"><div class="conf-track"><div class="conf-fill" style="width:97%"></div></div>97%</div></td>
+            <td><span class="badge badge-done">✓ Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-avatar ma-gold">DA</div><div><div class="merchant-name">Delta Airlines</div><div class="merchant-id">DOC-002</div></div></div></td>
+            <td>Nov 28, 2024</td><td><span class="badge badge-travel">✈️ Travel</span></td><td><strong>$342.00</strong></td>
+            <td><div class="conf-bar"><div class="conf-track"><div class="conf-fill" style="width:99%"></div></div>99%</div></td>
+            <td><span class="badge badge-done">✓ Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-avatar ma-pink">CV</div><div><div class="merchant-name">CVS Pharmacy</div><div class="merchant-id">DOC-003</div></div></div></td>
+            <td>Nov 25, 2024</td><td><span class="badge badge-medical">🏥 Medical</span></td><td><strong>$23.50</strong></td>
+            <td><div class="conf-bar"><div class="conf-track"><div class="conf-fill" style="width:94%"></div></div>94%</div></td>
+            <td><span class="badge badge-done">✓ Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-avatar ma-green">WF</div><div><div class="merchant-name">Whole Foods Market</div><div class="merchant-id">DOC-004</div></div></div></td>
+            <td>Nov 22, 2024</td><td><span class="badge badge-food">🍕 Food</span></td><td><strong>$61.30</strong></td>
+            <td><div class="conf-bar"><div class="conf-track"><div class="conf-fill" style="width:98%"></div></div>98%</div></td>
+            <td><span class="badge badge-done">✓ Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-avatar ma-purple">WW</div><div><div class="merchant-name">WeWork Office</div><div class="merchant-id">DOC-005</div></div></div></td>
+            <td>Nov 18, 2024</td><td><span class="badge badge-util">💡 Utilities</span></td><td><strong>$199.00</strong></td>
+            <td><div class="conf-bar"><div class="conf-track"><div class="conf-fill" style="width:96%"></div></div>96%</div></td>
+            <td><span class="badge badge-done">✓ Done</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand"><div class="footer-brand-logo">🧾</div><span class="footer-brand-name">ReceiptIQ</span></div>
+        <div class="footer-tagline">Intelligent receipt processing powered by AWS serverless architecture.</div>
+      </div>
+      <div><div class="footer-links-title">Product</div><ul class="footer-links"><li><a href="#">Upload Receipt</a></li><li><a href="#">Dashboard</a></li><li><a href="#">API Docs</a></li><li><a href="#">Pricing</a></li></ul></div>
+      <div><div class="footer-links-title">Company</div><ul class="footer-links"><li><a href="#">About</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms</a></li><li><a href="#">Contact</a></li></ul></div>
+      <div><div class="footer-links-title">Built on</div><ul class="footer-links"><li><a href="#">AWS S3</a></li><li><a href="#">Amazon Textract</a></li><li><a href="#">AWS Lambda</a></li><li><a href="#">DynamoDB + SES</a></li></ul></div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2024 ReceiptIQ. All rights reserved.</span>
+      <div class="footer-badges"><span class="footer-badge">🔒 Secure</span><span class="footer-badge">⚡ Serverless</span><span class="footer-badge">🌍 Global</span></div>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
