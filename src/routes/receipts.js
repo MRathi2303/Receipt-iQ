@@ -9,7 +9,7 @@ const router    = express.Router();
 
 const { uploadToS3 }        = require('../services/s3Service');
 const { getReceiptsFromDB } = require('../services/dbService');
-const { validateApiKey }    = require('../middleware/auth');
+// const { validateApiKey }    = require('../middleware/auth');
 
 // Multer: store in memory before streaming to S3
 const upload = multer({

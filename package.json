@@ -4,7 +4,7 @@
   "description": "ReceiptIQ — Intelligent Receipt Processing Pipeline API",
   "main": "src/server.js",
   "scripts": {
-    "start":   "node src/server.js",
+    "start":   "node server.js",
     "dev":     "nodemon src/server.js",
     "test":    "jest --coverage",
     "lambda":  "cd src/services && zip -r ../../lambda.zip lambdaHandler.js node_modules"
@@ -22,7 +22,7 @@
     "express-rate-limit":          "^7.0.0",
     "helmet":                      "^7.0.0",
     "morgan":                      "^1.10.0",
-    "multer":                      "^1.4.5"
+    "multer":                      "^1.4.5-lts.1"
   },
   "devDependencies": {
     "jest":    "^29.0.0",
