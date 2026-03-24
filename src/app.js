@@ -1,59 +1,72 @@
-/* =========================================================
-   ReceiptIQ — Frontend JavaScript
-   Handles upload, progress, API calls, dashboard
-   ========================================================= */
+const DEFAULT_API_BASE_URL = 'https://YOUR_API_GATEWAY_URL.execute-api.us-east-1.amazonaws.com/prod';
+const DEFAULT_API_KEY = 'YOUR_API_GATEWAY_API_KEY';
 
-// ╔══════════════════════════════════════════════════════════╗
-// ║  🔧 CLOUD CONFIG — FILL IN THESE VALUES                 ║
-// ╚══════════════════════════════════════════════════════════╝
+const runtimeConfig = window.RECEIPTIQ_CONFIG || {};
+const API_BASE_URL = runtimeConfig.apiBaseUrl || DEFAULT_API_BASE_URL;
+const API_KEY = runtimeConfig.apiKey || DEFAULT_API_KEY;
+const DEMO_MODE = API_BASE_URL.includes('YOUR_API_GATEWAY_URL');
+const API_ROOT = normalizeApiRoot(API_BASE_URL);
 
-// ⚠️  HIGHLIGHT: Replace with your deployed backend URL
-const API_BASE_URL = "https://YOUR_API_GATEWAY_URL.execute-api.us-east-1.amazonaws.com/prod";
-
-// ⚠️  HIGHLIGHT: Your API key (if using API Gateway API Key auth)
-const API_KEY = "YOUR_API_GATEWAY_API_KEY";
-
-// =========================================================
+const PROGRESS_STEPS = [
+  { circleId: 'sc1', fillId: null, progress: 12 },
+  { circleId: 'sc2', fillId: 'cf1', progress: 26 },
+  { circleId: 'sc3', fillId: 'cf2', progress: 40 },
+  { circleId: 'sc4', fillId: 'cf3', progress: 55 },
+  { circleId: 'sc5', fillId: 'cf4', progress: 72 },
+  { circleId: 'sc6', fillId: 'cf5', progress: 88 },
+  { circleId: 'sc7', fillId: 'cf6', progress: 100 }
+];
 
 let selectedFile = null;
+let demoIntervalId = null;
+let currentScreen = 'landing';
 
-// ── DRAG & DROP SETUP ─────────────────────────────────────
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 
 dropZone.addEventListener('click', () => fileInput.click());
 
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
+dropZone.addEventListener('dragover', (event) => {
+  event.preventDefault();
   dropZone.classList.add('drag-over');
 });
+
 dropZone.addEventListener('dragleave', () => {
   dropZone.classList.remove('drag-over');
 });
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
+
+dropZone.addEventListener('drop', (event) => {
+  event.preventDefault();
   dropZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) handleFileSelect(file);
+  const file = event.dataTransfer.files[0];
+  if (file) {
+    handleFileSelect(file);
+  }
 });
 
-fileInput.addEventListener('change', (e) => {
-  if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+fileInput.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    handleFileSelect(file);
+  }
 });
 
 function handleFileSelect(file) {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-  if (!allowed.includes(file.type)) {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
+  if (!allowedTypes.includes(file.type)) {
     showToast('Please upload a JPG, PNG, WEBP, or PDF file.', 'error');
     return;
   }
+
   if (file.size > 10 * 1024 * 1024) {
     showToast('File must be under 10 MB.', 'error');
     return;
   }
+
   selectedFile = file;
   document.getElementById('fileName').textContent = file.name;
-  document.getElementById('filePreview').style.display = 'block';
+  document.getElementById('filePreview').style.display = 'flex';
 }
 
 function clearFile() {
@@ -62,149 +75,193 @@ function clearFile() {
   document.getElementById('filePreview').style.display = 'none';
 }
 
-// ── SUBMIT RECEIPT ────────────────────────────────────────
 async function submitReceipt() {
   const email = document.getElementById('emailInput').value.trim();
-  const category = document.getElementById('categoryInput').value;
+  const category = document.getElementById('categoryInput').value || 'Auto-detect later';
 
   if (!selectedFile) {
     showToast('Please select a receipt file.', 'error');
     return;
   }
+
   if (!email || !isValidEmail(email)) {
     showToast('Please enter a valid email address.', 'error');
     return;
   }
 
   setSubmitting(true);
+  showProgressCard();
+
+  if (DEMO_MODE) {
+    simulateDemo(email, category);
+    return;
+  }
 
   const formData = new FormData();
   formData.append('file', selectedFile);
   formData.append('email', email);
-  formData.append('category', category || 'auto');
-
-  showProgressCard();
+  formData.append('category', category);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/receipts/upload`, {
+    const response = await fetch(buildApiUrl('/receipts/upload'), {
       method: 'POST',
-      headers: {
-        'x-api-key': API_KEY
-      },
+      headers: buildApiHeaders(),
       body: formData
     });
 
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.message || `Server error: ${response.status}`);
+      throw new Error(data.error || data.message || `Server error: ${response.status}`);
     }
 
-    const data = await response.json();
-    finishProgress();
-    showResult(data, email);
-
+    markAllStepsDone();
+    showResult({
+      merchant: data.merchant || 'Receipt uploaded',
+      date: data.date || 'Pending OCR',
+      total: data.total || 'Pending extraction',
+      category: data.category || category
+    }, email);
   } catch (error) {
     console.error('Upload error:', error);
     hideProgressCard();
-    // In demo mode, simulate a successful result
-    if (API_BASE_URL.includes('YOUR_API_GATEWAY_URL')) {
-      simulateDemo(email);
-    } else {
-      showToast(error.message || 'Upload failed. Please try again.', 'error');
-      setSubmitting(false);
-    }
+    showToast(error.message || 'Upload failed. Please try again.', 'error');
+    setSubmitting(false);
   }
 }
 
-// ── DEMO SIMULATION (until backend is deployed) ───────────
-function simulateDemo(email) {
-  showProgressCard();
-  const steps = ['step-upload','step-ocr','step-classify','step-store','step-email'];
-  const percentages = [20, 40, 65, 85, 100];
-  let i = 0;
+function simulateDemo(email, category) {
+  let currentStep = 0;
 
-  const interval = setInterval(() => {
-    if (i > 0) {
-      document.getElementById(steps[i-1]).querySelector('.step-dot').className = 'step-dot done';
-      document.getElementById(steps[i-1]).classList.add('done');
-    }
-    if (i < steps.length) {
-      document.getElementById(steps[i]).querySelector('.step-dot').className = 'step-dot active';
-      document.getElementById('progressBar').style.width = percentages[i] + '%';
-      i++;
-    } else {
-      clearInterval(interval);
-      setTimeout(() => {
-        finishProgress();
+  demoIntervalId = window.setInterval(() => {
+    activateStep(currentStep);
+    currentStep += 1;
+
+    if (currentStep === PROGRESS_STEPS.length) {
+      window.clearInterval(demoIntervalId);
+      demoIntervalId = null;
+
+      window.setTimeout(() => {
+        markAllStepsDone();
         showResult({
-          merchant: 'Starbucks Coffee',
-          date: new Date().toISOString().split('T')[0],
-          total: '$12.50',
-          tax: '$1.10',
-          category: '🍕 Food & Dining',
-          confidence: '97.3%',
-          docId: 'DEMO-' + Math.random().toString(36).substr(2, 8).toUpperCase()
+          merchant: 'Waiting for AWS extraction',
+          date: 'Will be filled by Textract',
+          total: 'Will be filled by Lambda',
+          category
         }, email);
-      }, 500);
+        showToast('Preview complete. The live version starts once AWS resources are connected.', 'info');
+      }, 400);
     }
-  }, 900);
+  }, 650);
 }
 
-// ── PROGRESS CARD ─────────────────────────────────────────
 function showProgressCard() {
+  clearDemoInterval();
   document.getElementById('progressCard').style.display = 'block';
   document.getElementById('resultCard').style.display = 'none';
-  document.getElementById('progressBar').style.width = '0%';
-  document.querySelectorAll('.step-dot').forEach(d => d.className = 'step-dot');
-  document.getElementById('steps-track') && document.querySelectorAll('.step-item').forEach(s => s.classList.remove('done'));
-  // Activate first step
-  document.getElementById('step-upload').querySelector('.step-dot').className = 'step-dot active';
-  document.getElementById('progressBar').style.width = '10%';
+  updateProgress(0);
+
+  PROGRESS_STEPS.forEach(({ circleId, fillId }) => {
+    const circle = document.getElementById(circleId);
+    circle.classList.remove('active', 'done');
+    if (fillId) {
+      document.getElementById(fillId).style.width = '0';
+    }
+  });
+
+  document.getElementById(PROGRESS_STEPS[0].circleId).classList.add('active');
 }
 
 function hideProgressCard() {
+  clearDemoInterval();
   document.getElementById('progressCard').style.display = 'none';
 }
 
-function finishProgress() {
-  document.getElementById('progressBar').style.width = '100%';
-  document.querySelectorAll('.step-dot').forEach(d => d.className = 'step-dot done');
+function clearDemoInterval() {
+  if (demoIntervalId) {
+    window.clearInterval(demoIntervalId);
+    demoIntervalId = null;
+  }
+}
+
+function activateStep(stepIndex) {
+  PROGRESS_STEPS.forEach(({ circleId, fillId }, index) => {
+    const circle = document.getElementById(circleId);
+
+    circle.classList.remove('active');
+
+    if (index < stepIndex) {
+      circle.classList.add('done');
+      if (fillId) {
+        document.getElementById(fillId).style.width = '100%';
+      }
+      return;
+    }
+
+    if (index === stepIndex) {
+      circle.classList.remove('done');
+      circle.classList.add('active');
+      if (fillId) {
+        document.getElementById(fillId).style.width = '100%';
+      }
+      updateProgress(PROGRESS_STEPS[index].progress);
+      return;
+    }
+
+    circle.classList.remove('done');
+    if (fillId) {
+      document.getElementById(fillId).style.width = '0';
+    }
+  });
+}
+
+function markAllStepsDone() {
+  PROGRESS_STEPS.forEach(({ circleId, fillId }) => {
+    const circle = document.getElementById(circleId);
+    circle.classList.remove('active');
+    circle.classList.add('done');
+    if (fillId) {
+      document.getElementById(fillId).style.width = '100%';
+    }
+  });
+
+  updateProgress(100);
   setSubmitting(false);
 }
 
-// ── RESULT CARD ───────────────────────────────────────────
+function updateProgress(percent) {
+  document.getElementById('progressBar').style.width = `${percent}%`;
+  document.getElementById('progressPct').textContent = `${percent}%`;
+}
+
 function showResult(data, email) {
-  setTimeout(() => {
+  window.setTimeout(() => {
     document.getElementById('progressCard').style.display = 'none';
     document.getElementById('resultCard').style.display = 'block';
-    document.getElementById('resMerchant').textContent  = data.merchant || '—';
-    document.getElementById('resDate').textContent      = data.date     || '—';
-    document.getElementById('resTotal').textContent     = data.total    || '—';
-    document.getElementById('resCategory').textContent  = data.category || '—';
-    document.getElementById('resTax').textContent       = data.tax      || '—';
-    document.getElementById('resConfidence').textContent= data.confidence || '—';
-    document.getElementById('resEmail').textContent     = email;
+    document.getElementById('resMerchant').textContent = data.merchant || 'Pending';
+    document.getElementById('resDate').textContent = data.date || 'Pending';
+    document.getElementById('resTotal').textContent = data.total || 'Pending';
+    document.getElementById('resCategory').textContent = data.category || 'Pending';
+    document.getElementById('resEmail').textContent = email;
     document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 600);
+  }, 350);
 }
 
 function resetForm() {
   clearFile();
   document.getElementById('emailInput').value = '';
   document.getElementById('categoryInput').value = '';
-  document.getElementById('resultCard').style.display = 'none';
   document.getElementById('progressCard').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('resultCard').style.display = 'none';
 }
 
-// ── HELPERS ───────────────────────────────────────────────
 function setSubmitting(loading) {
-  const btn = document.getElementById('submitBtn');
-  const txt = document.getElementById('submitText');
-  const spn = document.getElementById('submitSpinner');
-  btn.disabled = loading;
-  txt.style.display = loading ? 'none' : 'inline';
-  spn.style.display = loading ? 'inline-block' : 'none';
+  const button = document.getElementById('submitBtn');
+  const text = document.getElementById('submitText');
+  const spinner = document.getElementById('submitSpinner');
+
+  button.disabled = loading;
+  text.style.display = loading ? 'none' : 'inline';
+  spinner.style.display = loading ? 'inline-block' : 'none';
 }
 
 function isValidEmail(email) {
@@ -215,54 +272,132 @@ function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.textContent = message;
   toast.style.cssText = `
-    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-    background: ${type === 'error' ? '#E8553A' : '#2BBFA5'};
-    color: #fff; padding: 12px 20px; border-radius: 10px;
-    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    animation: slideIn .3s ease; max-width: 360px;
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    max-width: 360px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: ${type === 'error' ? '#b54141' : '#0d6f66'};
+    color: #fff;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
+    font: 600 14px ${JSON.stringify(getComputedStyle(document.body).fontFamily)};
   `;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 4000);
+  window.setTimeout(() => toast.remove(), 3200);
 }
 
-// ── DASHBOARD: Load receipts from API ─────────────────────
-async function loadDashboard() {
-  try {
-    const resp = await fetch(`${API_BASE_URL}/receipts`, {
-      headers: { 'x-api-key': API_KEY }
+function buildApiUrl(pathname) {
+  return `${API_ROOT}${pathname}`;
+}
+
+function buildApiHeaders() {
+  return API_KEY && API_KEY !== DEFAULT_API_KEY
+    ? { 'x-api-key': API_KEY }
+    : {};
+}
+
+function normalizeApiRoot(baseUrl) {
+  const trimmed = String(baseUrl || '').replace(/\/+$/, '');
+  if (!trimmed) {
+    return '/api';
+  }
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+}
+
+function initializeExperience() {
+  document.body.classList.add('screen-app');
+  initializeScreenNavigation();
+  applyExperienceMode();
+  bindPlaceholderActions();
+}
+
+function applyExperienceMode() {
+  const bannerPill = document.getElementById('setupPill');
+  const bannerCopy = document.getElementById('setupCopy');
+  const demoNote = document.getElementById('demoNote');
+  const submitText = document.getElementById('submitText');
+
+  if (DEMO_MODE) {
+    bannerPill.textContent = 'Preview Mode';
+    bannerCopy.textContent = 'The interface is complete to explore. AWS resources are the only remaining step before real upload, storage, OCR, and email delivery are live.';
+    demoNote.style.display = 'block';
+    submitText.textContent = 'Preview Receipt Flow';
+    return;
+  }
+
+  bannerPill.textContent = 'Connected Mode';
+  bannerCopy.textContent = 'Frontend and backend are connected. AWS-backed live receipt processing is now enabled through your configured environment.';
+  demoNote.style.display = 'none';
+  submitText.textContent = 'Process Receipt';
+}
+
+function bindPlaceholderActions() {
+  document.querySelectorAll('[data-demo-action]').forEach((element) => {
+    element.classList.add('is-disabled');
+    element.addEventListener('click', (event) => {
+      event.preventDefault();
+      showToast(element.getAttribute('data-demo-action'), 'info');
     });
-    if (!resp.ok) return; // Fall through to static demo data
-    const data = await resp.json();
-    if (data.items && data.items.length > 0) {
-      renderTable(data.items);
+  });
+}
+
+function initializeScreenNavigation() {
+  document.querySelectorAll('[data-screen-link]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const targetScreen = link.getAttribute('data-screen-link');
+      if (!targetScreen) {
+        return;
+      }
+
+      event.preventDefault();
+      showScreen(targetScreen, true);
+    });
+  });
+
+  const initialScreen = normalizeScreenFromHash(window.location.hash) || 'landing';
+  showScreen(initialScreen, false);
+
+  window.addEventListener('hashchange', () => {
+    const targetScreen = normalizeScreenFromHash(window.location.hash);
+    if (targetScreen && targetScreen !== currentScreen) {
+      showScreen(targetScreen, false);
     }
-  } catch {
-    // Backend not deployed yet — static demo data shown in HTML
+  });
+}
+
+function showScreen(screenId, updateHash) {
+  const nextScreen = document.querySelector(`[data-screen="${screenId}"]`);
+  if (!nextScreen) {
+    return;
+  }
+
+  document.querySelectorAll('.app-screen').forEach((screen) => {
+    screen.classList.remove('active-screen');
+  });
+
+  nextScreen.classList.add('active-screen');
+  nextScreen.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  currentScreen = screenId;
+
+  document.querySelectorAll('[data-screen-link]').forEach((link) => {
+    const isActive = link.getAttribute('data-screen-link') === screenId;
+    link.classList.toggle('is-current-screen', isActive);
+  });
+
+  if (updateHash) {
+    const targetHash = screenId === 'landing' ? '#landing' : `#${screenId}`;
+    if (window.location.hash !== targetHash) {
+      window.history.pushState(null, '', targetHash);
+    }
   }
 }
 
-function renderTable(items) {
-  const tbody = document.getElementById('receiptTableBody');
-  tbody.innerHTML = items.map(r => `
-    <tr>
-      <td><strong>${escapeHtml(r.merchant)}</strong></td>
-      <td>${escapeHtml(r.date)}</td>
-      <td><span class="badge badge-${r.category.toLowerCase()}">${escapeHtml(r.category)}</span></td>
-      <td>${escapeHtml(r.total)}</td>
-      <td>${escapeHtml(r.confidence)}</td>
-      <td><span class="badge badge-done">Done</span></td>
-    </tr>
-  `).join('');
+function normalizeScreenFromHash(hash) {
+  const value = String(hash || '').replace(/^#/, '');
+  return value || 'landing';
 }
 
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-  loadDashboard();
-});
+document.addEventListener('DOMContentLoaded', initializeExperience);

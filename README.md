@@ -1,157 +1,77 @@
-User Uploads (Frontend)
-        │
-        ▼
-REST API (Express / Node.js)
-        │
-        ▼
-AWS S3 (Object Storage)
-        │
-        ▼
-S3 Event Trigger
-        │
-        ▼
-AWS Lambda
-(Textract OCR + AI Classification)
-        │
-        ▼
-DynamoDB (Structured Storage)
-        │
-        ▼
-SNS Notification
-        │
-        ▼
-SES Email Delivery
+# ReceiptIQ
 
+ReceiptIQ is a receipt-processing demo with a static frontend, an Express API, and an AWS-based async processing pipeline.
 
-receipt-pipeline/
-│
-├── frontend/
-│   ├── index.html        # Main UI (upload, dashboard)
-│   ├── styles.css        # UI design
-│   └── app.js            # Upload logic + API calls
-│
-├── backend/
-│   ├── src/
-│   │   ├── server.js
-│   │   ├── routes/
-│   │   │   └── receipts.js
-│   │   ├── middleware/
-│   │   │   └── errorHandler.js
-│   │   └── services/
-│   │       ├── s3Service.js
-│   │       ├── dbService.js
-│   │       └── lambdaHandler.js
-│   │
-│   ├── package.json
-│   └── .env.example
-│
-└── infrastructure/
-    └── setup.sh
+## Project Layout
 
+```text
+3rd_Year-Major_Project/
+├── index.html
+├── styles.css
+├── lambdaHandler.js
+├── package.json
+├── setup.sh
+└── src/
+    ├── app.js
+    ├── server.js
+    ├── middleware/
+    │   └── errorHandler.js
+    ├── routes/
+    │   └── receipts.js
+    └── services/
+        ├── dbService.js
+        └── s3Service.js
+```
 
+## Getting Started
 
-
-
-
-    git clone <repo-url>
-cd backend
+```bash
 npm install
 cp .env.example .env
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### 2. Provision AWS (see infrastructure/setup.sh)
-- Create S3 bucket
-- Create DynamoDB table
-- Create SNS topic
-- Verify SES email
-- Deploy Lambda (lambdaHandler.js)
-- Add S3 → Lambda trigger
-
-### 3. Run Backend
-```bash
-npm run dev    # Development with nodemon
-npm start      # Production
+npm run dev
 ```
 
-### 4. Deploy Frontend
-```bash
-# Option A: Open frontend/index.html directly in browser (local test)
-# Option B: Deploy to S3 static hosting, Netlify, or Vercel
-# Update API_BASE_URL in frontend/app.js first!
-```
+The API runs on `http://localhost:4000` by default.
 
-## 🔧 Configuration Checklist
+To try the frontend locally, open `index.html` in a browser. The frontend script is loaded from `src/app.js`.
 
-All values marked ⚠️ HIGHLIGHT must be filled before the app works:
+## Configuration
 
-| File | Variable | What to put |
-|------|----------|-------------|
-| frontend/app.js | `API_BASE_URL` | Your deployed backend URL |
-| frontend/app.js | `API_KEY` | Your API key (match .env) |
-| backend/.env | `FRONTEND_URL` | Your frontend domain |
-| backend/.env | `API_KEY` | Strong random string |
-| backend/.env | `AWS_REGION` | e.g. `us-east-1` |
-| backend/.env | `S3_BUCKET_NAME` | Your S3 bucket name |
-| backend/.env | `DYNAMODB_TABLE_NAME` | Your DynamoDB table |
-| backend/.env | `SNS_TOPIC_ARN` | Copy from AWS SNS |
-| backend/.env | `SES_FROM_EMAIL` | Verified email in SES |
+Fill in the values in `.env` before connecting the app to AWS:
 
-## 🛡 Security Notes
+- `FRONTEND_URL`
+- `API_KEY`
+- `AWS_REGION`
+- `S3_BUCKET_NAME`
+- `DYNAMODB_TABLE_NAME`
+- `SNS_TOPIC_ARN`
+- `SES_FROM_EMAIL`
 
-- Never commit `.env` to git (it's in `.gitignore`)
-- In production, use IAM Roles instead of access keys
-- API keys are validated on every request
-- Files are validated by type and size before upload
-- S3 bucket is private with public access blocked
+For the browser app, update the values near the top of `src/app.js`:
 
-## 📬 Email Flow
+- `API_BASE_URL`: For local backend usage, set this to `http://localhost:4000/api`
+- `API_KEY`: Match the backend `API_KEY`
 
-1. Lambda processes receipt → calls SNS Publish
-2. SNS delivers JSON payload to subscribed Lambda or email
-3. That Lambda calls SES SendEmail with branded HTML
+If those frontend placeholders are left unchanged, the UI falls back to demo mode after a failed upload request.
 
-## 🧪 Testing the Demo
-
-Without a backend deployed, the frontend runs in **demo mode**:
-- Upload any file + enter an email → click Process Receipt
-- A simulated pipeline runs showing all 7 steps
-- A mock result is shown (Starbucks, $12.50)
-
-## 📄 API Endpoints
+## API Endpoints
 
 | Method | Path | Description |
-|--------|------|-------------|
-| GET | /health | Health check |
-| POST | /api/receipts/upload | Upload receipt file |
-| GET | /api/receipts | List all receipts |
-| GET | /api/receipts/:docId | Get single receipt |
+| --- | --- | --- |
+| GET | `/health` | Health check |
+| POST | `/api/receipts/upload` | Upload a receipt for async processing |
+| GET | `/api/receipts` | List processed receipts |
+| GET | `/api/receipts/:docId` | Fetch a specific processed receipt |
 
-## 🔗 Tech Stack
+## Scripts
 
-- **Frontend**: HTML5, CSS3, Vanilla JS (no framework needed)
-- **Backend**: Node.js 18+, Express 4
-- **AWS Services**: S3, Lambda, Textract, DynamoDB, SNS, SES
-- **Auth**: API Key via `x-api-key` header
-#
+- `npm start`: Start the production server
+- `npm run dev`: Start the server with `nodemon`
+- `npm test`: Run Jest tests
+- `npm run lambda`: Build `lambda.zip` from the root project files
+
+## Notes
+
+- Uploaded files are validated for type and limited to 10 MB.
+- The API expects an `x-api-key` header on receipt routes.
+- The Lambda function in `lambdaHandler.js` is intended to be deployed separately to AWS Lambda.

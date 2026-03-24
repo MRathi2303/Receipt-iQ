@@ -4,10 +4,10 @@
   "description": "ReceiptIQ — Intelligent Receipt Processing Pipeline API",
   "main": "src/server.js",
   "scripts": {
-    "start":   "node server.js",
+    "start":   "node src/server.js",
     "dev":     "nodemon src/server.js",
     "test":    "jest --coverage",
-    "lambda":  "cd src/services && zip -r ../../lambda.zip lambdaHandler.js node_modules"
+    "lambda":  "zip -r lambda.zip lambdaHandler.js node_modules package.json package-lock.json"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb":    "^3.0.0",

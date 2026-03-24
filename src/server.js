@@ -4,6 +4,8 @@
 // =========================================================
 
 require('dotenv').config();
+const fs         = require('fs');
+const path       = require('path');
 const express    = require('express');
 const cors       = require('cors');
 const helmet     = require('helmet');
@@ -14,6 +16,8 @@ const receiptRoutes = require('./routes/receipts');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
+const projectRoot = path.join(__dirname, '..');
+const indexPath = path.join(projectRoot, 'index.html');
 
 // ── SECURITY MIDDLEWARE ───────────────────────────────────
 app.use(helmet());
@@ -36,6 +40,33 @@ app.use('/api', limiter);
 app.use(express.json({ limit: '1mb' }));
 app.use(morgan('combined'));
 
+// ── STATIC FRONTEND ───────────────────────────────────────
+app.use('/src', express.static(path.join(projectRoot, 'src'), { index: false }));
+app.get('/styles.css', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'styles.css'));
+});
+
+app.get(['/', '/index.html'], (req, res, next) => {
+  fs.readFile(indexPath, 'utf8', (error, html) => {
+    if (error) {
+      next(error);
+      return;
+    }
+
+    const runtimeConfig = {
+      apiBaseUrl: '/api',
+      apiKey: process.env.API_KEY || 'YOUR_API_KEY_HERE'
+    };
+
+    const injectedHtml = html.replace(
+      '</head>',
+      `  <script>window.RECEIPTIQ_CONFIG = ${JSON.stringify(runtimeConfig)};</script>\n</head>`
+    );
+
+    res.type('html').send(injectedHtml);
+  });
+});
+
 // ── HEALTH CHECK ──────────────────────────────────────────
 app.get('/health', (req, res) => {
   res.json({
@@ -53,8 +84,10 @@ app.use(errorHandler);
 
 // ── START ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`✅  ReceiptIQ API running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`ReceiptIQ API running on port ${PORT}`);
+  });
+}
 
 module.exports = app;

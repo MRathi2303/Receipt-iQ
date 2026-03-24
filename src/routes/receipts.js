@@ -8,8 +8,8 @@ const multer    = require('multer');
 const router    = express.Router();
 
 const { uploadToS3 }        = require('../services/s3Service');
-const { getReceiptsFromDB } = require('../services/dbService');
-// const { validateApiKey }    = require('../middleware/auth');
+const { getReceiptsFromDB, getReceiptById } = require('../services/dbService');
+const { validateApiKey } = require('../middleware/errorHandler');
 
 // Multer: store in memory before streaming to S3
 const upload = multer({
@@ -84,7 +84,6 @@ router.get('/', validateApiKey, async (req, res, next) => {
 // Get single receipt result
 router.get('/:docId', validateApiKey, async (req, res, next) => {
   try {
-    const { getReceiptById } = require('../services/dbService');
     const item = await getReceiptById(req.params.docId);
     if (!item) return res.status(404).json({ error: 'Receipt not found.' });
     res.json(item);
