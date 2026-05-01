@@ -3,458 +3,306 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ReceiptIQ — Intelligent Receipt Processing</title>
+  <title>ReceiptIQ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20260501-ui3" />
 </head>
 <body>
-
-<div class="setup-banner" id="setupBanner">
-  <div class="setup-banner-inner">
-    <span class="setup-pill" id="setupPill">Preview Mode</span>
-    <p class="setup-copy" id="setupCopy">
-      Frontend and backend are connected. The only remaining step is wiring the AWS services that process and deliver live receipt results.
-    </p>
-  </div>
-</div>
-
-<nav class="navbar">
-  <a class="brand" href="#landing" data-screen-link="landing">
-    <div class="brand-logo">🧾</div>
-    <span class="brand-name">Receipt<span class="brand-accent">IQ</span></span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#home-s" data-screen-link="home-s">Home</a></li>
-    <li><a href="#dash-s" data-screen-link="dash-s">Dashboard</a></li>
-    <li><a href="#workflow-s" data-screen-link="workflow-s">Workflow</a></li>
-    <li><a href="#about-s" data-screen-link="about-s">About</a></li>
-  </ul>
-  <div class="nav-right">
-    <a class="btn-nav-ghost" href="#about-s" data-screen-link="about-s">Read More</a>
-    <a class="btn-nav-primary" href="#home-s" data-screen-link="home-s">Try Now</a>
-  </div>
-</nav>
-
-<main class="screen-stack">
-<section class="landing app-screen active-screen" id="landing" data-screen="landing">
-  <div class="landing-glow landing-glow-a"></div>
-  <div class="landing-glow landing-glow-b"></div>
-  <div class="landing-shell">
-    <div class="landing-copy">
-      <div class="eyebrow">Receipt Intelligence</div>
-      <h1 class="landing-title">
-        Upload a receipt.
-        <span>Let the cloud do the rest.</span>
-      </h1>
-      <p class="landing-text">
-        ReceiptIQ gives users a simple way to submit a bill or receipt with an email address, while the actual extraction pipeline is designed to run through AWS.
-      </p>
-      <div class="landing-feature-list">
-        <div class="landing-feature">Simple receipt upload flow</div>
-        <div class="landing-feature">Clear user status feedback</div>
-        <div class="landing-feature">Ready for S3, Lambda, Textract, DynamoDB, and SES</div>
-      </div>
-      <div class="landing-actions">
-        <a class="btn-primary-lg" href="#home-s" data-screen-link="home-s">Try Now</a>
-        <a class="btn-secondary-lg" href="#workflow-s" data-screen-link="workflow-s">See Workflow</a>
-      </div>
-    </div>
-
-    <div class="landing-preview">
-      <div class="preview-window">
-        <div class="preview-topbar">
-          <span></span><span></span><span></span>
-        </div>
-        <div class="preview-panel">
-          <div class="preview-chip">User uploads email + receipt</div>
-          <div class="preview-line"></div>
-          <div class="preview-card">Backend accepts request and stores metadata</div>
-          <div class="preview-line"></div>
-          <div class="preview-card">AWS pipeline takes over the heavy work</div>
-        </div>
-      </div>
-      <p class="preview-note">
-        Designed for a smooth user-facing experience first, with cloud processing layered in after submission.
-      </p>
-    </div>
-  </div>
-</section>
-
-<section class="section home-section app-screen" id="home-s" data-screen="home-s">
-  <div class="section-inner">
-    <div class="section-head">
-      <div class="section-eyebrow">Home</div>
-      <h2 class="section-title">Upload section and user entry point</h2>
-      <p class="section-sub">
-        This is the main app area where a user provides their email address and receipt file. The form is ready now, and the preview simulates the future cloud flow until AWS is connected.
-      </p>
-    </div>
-
-    <div class="home-layout">
-      <div class="home-intro-card">
-        <h3>How this helps a user</h3>
-        <div class="help-grid">
-          <div class="help-card">
-            <strong>Less manual work</strong>
-            <p>Instead of saving bills manually, users can hand over the receipt and let the pipeline extract the useful details.</p>
-          </div>
-          <div class="help-card">
-            <strong>Clear next step</strong>
-            <p>The app only asks for two key things: a receipt file and an email address for the final summary.</p>
-          </div>
-          <div class="help-card">
-            <strong>Cloud-ready structure</strong>
-            <p>The interface already matches the future processing flow, so the live version will not need a redesign later.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="upload-wrap">
-        <div class="upload-card">
-          <div class="upload-card-header">
-            <div class="upload-header-title">Receipt Submission</div>
-            <div class="upload-header-sub">Add an email and a receipt file to start the flow.</div>
-          </div>
-          <div class="upload-body">
-            <div class="demo-note" id="demoNote">
-              <strong>Preview mode:</strong> the interface is live, but the real S3, Lambda, Textract, DynamoDB, and SES processing begins after AWS setup.
-            </div>
-
-            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-              <div class="drop-icon-wrap">📄</div>
-              <div class="drop-title">Drag and drop a receipt</div>
-              <div class="drop-hint">Supported: JPG, PNG, WEBP, and PDF up to 10 MB</div>
-              <button class="btn-choose" onclick="event.stopPropagation();document.getElementById('fileInput').click()">
-                Choose File
-              </button>
-              <input type="file" id="fileInput" accept="image/*,.pdf" hidden />
-            </div>
-
-            <div class="file-chip" id="filePreview" style="display:none">
-              <span class="file-chip-icon">📎</span>
-              <span class="file-chip-name" id="fileName">receipt.jpg</span>
-              <button class="file-chip-remove" onclick="clearFile()">✕</button>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="emailInput">Notification Email</label>
-              <input class="form-control" type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
-              <div class="form-hint">This address becomes the final delivery destination once SES is connected.</div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="categoryInput">Expense Category</label>
-              <select class="form-control" id="categoryInput">
-                <option value="">Auto-detect later</option>
-                <option value="food">Food &amp; Dining</option>
-                <option value="travel">Travel</option>
-                <option value="utilities">Utilities</option>
-                <option value="shopping">Shopping</option>
-                <option value="medical">Medical</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <button class="btn-submit" id="submitBtn" onclick="submitReceipt()">
-              <span id="submitText">Preview Receipt Flow</span>
-              <span class="submit-arrow">→</span>
-              <span class="spinner" id="submitSpinner" style="display:none"></span>
-            </button>
-          </div>
-        </div>
-
-        <aside class="upload-side">
-          <div class="side-card">
-            <div class="side-card-title">What happens here</div>
-            <div class="feature-list">
-              <div class="feature-item"><div class="fcheck">✓</div>User adds email</div>
-              <div class="feature-item"><div class="fcheck">✓</div>User uploads receipt</div>
-              <div class="feature-item"><div class="fcheck">✓</div>Frontend validates the file</div>
-              <div class="feature-item"><div class="fcheck">✓</div>Backend receives the submission</div>
-            </div>
-          </div>
-
-          <div class="side-card">
-            <div class="side-card-title">What comes after AWS setup</div>
-            <div class="feature-list">
-              <div class="feature-item"><div class="fcheck">✓</div>Upload is stored in S3</div>
-              <div class="feature-item"><div class="fcheck">✓</div>Lambda begins processing</div>
-              <div class="feature-item"><div class="fcheck">✓</div>Extracted data is saved</div>
-              <div class="feature-item"><div class="fcheck">✓</div>Email summary is delivered</div>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <div class="progress-card" id="progressCard" style="display:none">
-        <div class="progress-header">
-          <div class="progress-spinner-wrap"><div class="progress-spin"></div></div>
+  <div class="app-shell">
+    <section class="auth-shell" id="authShell">
+      <div class="auth-hero">
+        <div class="brand-row">
+          <div class="brand-mark">R</div>
           <div>
-            <div class="progress-title">Walking through the receipt flow</div>
-            <div class="progress-sub">The progress animation shows the future movement from frontend to AWS.</div>
+            <strong>ReceiptIQ</strong>
+            <span>Cloud receipt workspace</span>
           </div>
         </div>
-        <div class="steps-row">
-          <div class="step-node"><div class="step-circle" id="sc1">📤</div><div class="step-lbl">Upload</div></div>
-          <div class="step-conn"><div class="step-fill" id="cf1"></div></div>
-          <div class="step-node"><div class="step-circle" id="sc2">🔗</div><div class="step-lbl">API</div></div>
-          <div class="step-conn"><div class="step-fill" id="cf2"></div></div>
-          <div class="step-node"><div class="step-circle" id="sc3">🪣</div><div class="step-lbl">S3</div></div>
-          <div class="step-conn"><div class="step-fill" id="cf3"></div></div>
-          <div class="step-node"><div class="step-circle" id="sc4">⚡</div><div class="step-lbl">Trigger</div></div>
-          <div class="step-conn"><div class="step-fill" id="cf4"></div></div>
-          <div class="step-node"><div class="step-circle" id="sc5">🤖</div><div class="step-lbl">OCR</div></div>
-          <div class="step-conn"><div class="step-fill" id="cf5"></div></div>
-          <div class="step-node"><div class="step-circle" id="sc6">💾</div><div class="step-lbl">DB</div></div>
-          <div class="step-conn"><div class="step-fill" id="cf6"></div></div>
-          <div class="step-node"><div class="step-circle" id="sc7">📧</div><div class="step-lbl">Email</div></div>
-        </div>
-        <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
-        <div class="progress-pct" id="progressPct">0%</div>
-      </div>
 
-      <div class="result-card" id="resultCard" style="display:none">
-        <div class="result-success-header">
-          <div class="result-check-circle">✓</div>
+        <div class="hero-copy">
+          <div class="hero-pill">PDF intelligence</div>
+          <h1>Turn receipt PDFs into a clean expense workspace.</h1>
+          <p>
+            Upload, process, and revisit every receipt from one account-first dashboard built for your project pipeline.
+          </p>
+        </div>
+
+        <div class="hero-metrics" aria-label="ReceiptIQ capabilities">
           <div>
-            <div class="result-success-title">Preview completed</div>
-            <div class="result-success-sub">The user flow is ready. Live cloud processing starts after AWS setup.</div>
+            <span>Format</span>
+            <strong>PDF</strong>
+          </div>
+          <div>
+            <span>Storage</span>
+            <strong>S3</strong>
+          </div>
+          <div>
+            <span>Extract</span>
+            <strong>AI</strong>
           </div>
         </div>
-        <div class="result-fields">
-          <div class="result-field"><div class="rf-label">Merchant</div><div class="rf-val" id="resMerchant">—</div></div>
-          <div class="result-field"><div class="rf-label">Date</div><div class="rf-val" id="resDate">—</div></div>
-          <div class="result-field"><div class="rf-label">Total Amount</div><div class="rf-val big" id="resTotal">—</div></div>
-          <div class="result-field"><div class="rf-label">Category</div><div class="rf-val" id="resCategory">—</div></div>
-        </div>
-        <div class="result-email-note">Summary destination: <strong id="resEmail">your email</strong></div>
-        <button class="btn-another" onclick="resetForm()">Process Another Receipt</button>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section class="section dashboard-section app-screen" id="dash-s" data-screen="dash-s">
-  <div class="section-inner">
-    <div class="section-head">
-      <div class="section-eyebrow">Dashboard</div>
-      <h2 class="section-title">A separate workspace for receipt records</h2>
-      <p class="section-sub">
-        This section is kept separate from the upload flow. It is meant to hold structured receipt records after the cloud pipeline stores and returns usable data.
-      </p>
-    </div>
-
-    <div class="dashboard-layout">
-      <div class="dashboard-board">
-        <div class="dashboard-toolbar">
-          <div class="toolbar-search">Search receipts, merchants, or status</div>
-          <button class="btn-export" data-demo-action="Export becomes available after real DynamoDB records are available.">Export</button>
-        </div>
-        <div class="dashboard-columns">
-          <div class="dashboard-column">
-            <div class="column-title">Incoming</div>
-            <div class="column-card">
-              <strong>User submissions</strong>
-              <p>New uploads will appear here as soon as the backend accepts the receipt and email.</p>
+        <div class="hero-preview" aria-hidden="true">
+          <div class="preview-toolbar">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="preview-receipt">
+            <div class="receipt-topline"></div>
+            <div class="receipt-row wide"></div>
+            <div class="receipt-row"></div>
+            <div class="receipt-row short"></div>
+            <div class="receipt-total">
+              <span>Total</span>
+              <strong>Ready</strong>
             </div>
           </div>
-          <div class="dashboard-column">
-            <div class="column-title">Processing</div>
-            <div class="column-card">
-              <strong>Cloud activity</strong>
-              <p>S3, Lambda, and Textract progress can later be reflected here as each receipt moves through the pipeline.</p>
+          <div class="preview-flow">
+            <span>Upload</span>
+            <span>Process</span>
+            <span>History</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-panel">
+        <div class="panel-orbit" aria-hidden="true"></div>
+        <div class="auth-tabs">
+          <button class="auth-tab is-active" id="loginTab" type="button">Log In</button>
+          <button class="auth-tab" id="signupTab" type="button">Sign Up</button>
+        </div>
+
+        <form class="auth-form" id="loginForm">
+          <h2>Welcome back</h2>
+          <p>Log in to upload new PDFs and view your previous processed receipts.</p>
+          <label class="field">
+            <span>Email</span>
+            <input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Minimum 8 characters" />
+          </label>
+          <button class="primary-btn" id="loginSubmit" type="submit">Log In</button>
+        </form>
+
+        <form class="auth-form hidden" id="signupForm">
+          <h2>Create your workspace</h2>
+          <p>Your receipts will later live under one user folder and one notification identity.</p>
+          <label class="field">
+            <span>Full name</span>
+            <input id="signupName" type="text" autocomplete="name" placeholder="Alex Morgan" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input id="signupEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input id="signupPassword" type="password" autocomplete="new-password" placeholder="Minimum 8 characters" />
+          </label>
+          <button class="primary-btn" id="signupSubmit" type="submit">Create Account</button>
+        </form>
+
+        <div class="auth-note" id="authNote">
+          Notifications will be tied to the account email after AWS notification verification is enabled.
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace-shell hidden" id="workspaceShell">
+      <header class="workspace-header">
+        <div class="workspace-brand">
+          <div class="brand-mark">R</div>
+          <div>
+            <div class="hero-pill">Logged in workspace</div>
+            <h1 class="workspace-title">Receipt command center</h1>
+            <p class="workspace-subtitle">Upload PDFs, watch processing, and scan your account history.</p>
+          </div>
+        </div>
+        <div class="workspace-user">
+          <div class="user-badge">
+            <span class="user-badge-label">Signed in as</span>
+            <strong id="userName">User</strong>
+            <span id="userEmail">you@example.com</span>
+          </div>
+          <button class="secondary-btn" id="logoutBtn" type="button">Log Out</button>
+        </div>
+      </header>
+
+      <main class="workspace-grid">
+        <section class="panel upload-panel">
+          <div class="panel-head">
+            <div>
+              <span class="panel-kicker">Upload</span>
+              <h2>New receipt</h2>
+            </div>
+            <span class="status-pill" id="notificationStatus">Notification setup pending</span>
+          </div>
+
+          <div class="drop-zone" id="dropZone">
+            <div class="drop-icon">+</div>
+            <strong>Drag and drop a receipt PDF</strong>
+            <span>Only PDF files up to 10 MB are accepted.</span>
+            <button class="secondary-btn" id="chooseFileBtn" type="button">Choose PDF</button>
+            <input type="file" id="fileInput" accept=".pdf,application/pdf" hidden />
+          </div>
+
+          <div class="file-chip hidden" id="filePreview">
+            <span id="fileName">receipt.pdf</span>
+            <button class="icon-btn" id="clearFileBtn" type="button">Remove</button>
+          </div>
+
+          <label class="field">
+            <span>Expense category</span>
+            <select id="categoryInput">
+              <option value="">Auto-detect later</option>
+              <option value="food">Food &amp; Dining</option>
+              <option value="travel">Travel</option>
+              <option value="utilities">Utilities</option>
+              <option value="shopping">Shopping</option>
+              <option value="medical">Medical</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          <button class="primary-btn" id="submitBtn" type="button">
+            <span id="submitText">Process Receipt</span>
+            <span class="spinner hidden" id="submitSpinner"></span>
+          </button>
+
+          <div class="progress-card hidden" id="progressCard">
+            <div class="progress-head">
+              <strong id="progressTitle">Receipt is on its way</strong>
+              <span id="progressPct">0%</span>
+            </div>
+            <p id="progressSubtitle">The upload is moving from your account workspace into the processing pipeline.</p>
+            <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+            <div class="progress-steps">
+              <span class="progress-step" id="sc1">Upload</span>
+              <span class="progress-step" id="sc2">API</span>
+              <span class="progress-step" id="sc3">S3</span>
+              <span class="progress-step" id="sc4">Lambda</span>
+              <span class="progress-step" id="sc5">Extract</span>
+              <span class="progress-step" id="sc6">Store</span>
+              <span class="progress-step" id="sc7">Notify</span>
             </div>
           </div>
-          <div class="dashboard-column">
-            <div class="column-title">Completed</div>
-            <div class="column-card">
-              <strong>Structured output</strong>
-              <p>Final extracted records and delivery state will live here once the full AWS flow is online.</p>
-            </div>
-          </div>
-        </div>
 
-        <div class="sample-receipt-block">
-          <div class="sample-receipt-head">
-            <h3>Sample Receipt Record</h3>
-            <span class="sample-pill">Example</span>
-          </div>
-          <div class="sample-receipt-card">
-            <div class="sample-grid">
-              <div class="sample-item">
-                <span class="sample-label">Document ID</span>
-                <strong>REC-2026-001</strong>
-              </div>
-              <div class="sample-item">
-                <span class="sample-label">Merchant</span>
-                <strong>City Mart Grocery</strong>
-              </div>
-              <div class="sample-item">
-                <span class="sample-label">Date</span>
-                <strong>25 Mar 2026</strong>
-              </div>
-              <div class="sample-item">
-                <span class="sample-label">Total</span>
-                <strong>$42.80</strong>
-              </div>
-              <div class="sample-item">
-                <span class="sample-label">Category</span>
-                <strong>Food &amp; Dining</strong>
-              </div>
-              <div class="sample-item">
-                <span class="sample-label">Status</span>
-                <strong>Email Sent</strong>
+          <div class="result-card hidden" id="resultCard">
+            <div class="result-head">
+              <div class="result-badge" id="resultBadge">✓</div>
+              <div>
+                <strong id="resultTitle">Receipt processed</strong>
+                <p id="resultSubtitle">Your result is ready.</p>
               </div>
             </div>
+            <div class="result-grid">
+              <div><span>Merchant</span><strong id="resMerchant">—</strong></div>
+              <div><span>Date</span><strong id="resDate">—</strong></div>
+              <div><span>Total</span><strong id="resTotal">—</strong></div>
+              <div><span>Category</span><strong id="resCategory">—</strong></div>
+            </div>
+            <button class="secondary-btn" id="processAnotherBtn" type="button">Process Another Receipt</button>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <aside class="dashboard-side">
-        <div class="dashboard-side-card">
-          <h3>Data blocks</h3>
-          <ul class="detail-list">
-            <li>Document ID</li>
-            <li>Merchant name</li>
-            <li>Date and total</li>
-            <li>Detected category</li>
-            <li>Email delivery status</li>
-          </ul>
-        </div>
-        <div class="dashboard-side-card">
-          <h3>Why separate it</h3>
-          <p>
-            The upload page should stay focused on submission. The dashboard should stay focused on records, status, and results.
-          </p>
-        </div>
-      </aside>
-    </div>
-  </div>
-</section>
-
-<section class="section workflow-section app-screen" id="workflow-s" data-screen="workflow-s">
-  <div class="section-inner">
-    <div class="section-head">
-      <div class="section-eyebrow">Workflow</div>
-      <h2 class="section-title">A light visual showing movement through the app</h2>
-      <p class="section-sub">
-        This section illustrates how the flow travels from user action to cloud processing. It is intentionally animated just enough to make the direction clear.
-      </p>
-    </div>
-
-    <div class="workflow-card">
-      <div class="workflow-track">
-        <div class="workflow-dot"></div>
-      </div>
-      <div class="workflow-grid">
-        <div class="workflow-node">
-          <span class="workflow-step">01</span>
-          <h3>User adds receipt</h3>
-          <p>The app begins with a simple upload and email form.</p>
-        </div>
-        <div class="workflow-node">
-          <span class="workflow-step">02</span>
-          <h3>Backend receives it</h3>
-          <p>The request is validated and the upload is prepared for storage.</p>
-        </div>
-        <div class="workflow-node">
-          <span class="workflow-step">03</span>
-          <h3>AWS processes it</h3>
-          <p>S3, Lambda, Textract, DynamoDB, and SES complete the actual work.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section about-section app-screen" id="about-s" data-screen="about-s">
-  <div class="section-inner">
-    <div class="section-head">
-      <div class="section-eyebrow">About</div>
-      <h2 class="section-title">Detailed explanation with text and a simple diagram</h2>
-      <p class="section-sub">
-        This section explains the overall system more deeply, including what the frontend does, what the backend does, and where AWS takes over.
-      </p>
-    </div>
-
-    <div class="about-layout">
-      <div class="about-copy">
-        <div class="about-card">
-          <h3>Purpose</h3>
-          <p>
-            The app is designed to make receipt submission easy for users while keeping the heavy processing logic in cloud services. The frontend stays clean, and the backend stays minimal.
-          </p>
-        </div>
-        <div class="about-card">
-          <h3>Frontend role</h3>
-          <p>
-            The frontend focuses on collecting user input, validating the file format and size, and showing a clear status while the receipt moves into the system.
-          </p>
-        </div>
-        <div class="about-card">
-          <h3>Backend role</h3>
-          <p>
-            The backend accepts the upload request, attaches useful metadata such as the email and category, and places the receipt into cloud storage so the processing pipeline can begin.
-          </p>
-        </div>
-        <div class="about-card">
-          <h3>AWS role</h3>
-          <p>
-            S3 stores the file, Lambda reacts to the upload event, Textract extracts receipt data, DynamoDB saves the structured result, and SES delivers the final email notification.
-          </p>
-        </div>
-      </div>
-
-      <div class="about-visual">
-        <div class="diagram-card">
-          <div class="diagram-title">System Diagram</div>
-          <div class="diagram-flow">
-            <div class="diagram-box">Frontend</div>
-            <div class="diagram-arrow">→</div>
-            <div class="diagram-box">Express API</div>
-            <div class="diagram-arrow">→</div>
-            <div class="diagram-box">S3</div>
-            <div class="diagram-arrow">→</div>
-            <div class="diagram-box">Lambda + Textract</div>
-            <div class="diagram-arrow">→</div>
-            <div class="diagram-box">DynamoDB + SES</div>
+        <section class="panel overview-panel">
+          <div class="panel-head">
+            <div>
+              <span class="panel-kicker">Overview</span>
+              <h2>Account snapshot</h2>
+            </div>
           </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span>Total receipts</span>
+              <strong id="incomingCount">0</strong>
+            </div>
+            <div class="stat-card">
+              <span>Processing</span>
+              <strong id="processingCount">0</strong>
+            </div>
+            <div class="stat-card">
+              <span>Completed</span>
+              <strong id="completedCount">0</strong>
+            </div>
+          </div>
+
+          <div class="latest-card">
+            <div class="latest-head">
+              <strong>Latest processed receipt</strong>
+              <span class="status-pill" id="latestReceiptPill">No data yet</span>
+            </div>
+            <div class="latest-grid">
+              <div><span>Document ID</span><strong id="latestDocId">No records yet</strong></div>
+              <div><span>Merchant</span><strong id="latestMerchant">—</strong></div>
+              <div><span>Date</span><strong id="latestDate">—</strong></div>
+              <div><span>Total</span><strong id="latestTotal">—</strong></div>
+              <div><span>Category</span><strong id="latestCategory">—</strong></div>
+              <div><span>Status</span><strong id="latestStatus">—</strong></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel history-panel">
+          <div class="panel-head">
+            <div>
+              <span class="panel-kicker">History</span>
+              <h2>Receipt history</h2>
+            </div>
+          </div>
+          <div class="history-empty" id="historyEmpty">No receipts yet. Upload your first PDF to build your history.</div>
+          <div class="history-list" id="historyList"></div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <script src="/runtime-config.js"></script>
+  <script src="/vendor/axios.min.js"></script>
+
+  <div class="modal" id="detailModal">
+    <div class="modal-backdrop" id="detailBackdrop"></div>
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <span class="panel-kicker">Receipt detail</span>
+          <h3 id="detailMerchant">—</h3>
+          <p id="detailSubtitle">—</p>
         </div>
-        <div class="diagram-note">
-          The left side of the system is user-facing. The right side is event-driven and cloud-oriented.
+        <button class="ghost-btn" id="detailClose">Close</button>
+      </div>
+
+      <div class="detail-grid">
+        <div><span>Document ID</span><strong id="detailDocId">—</strong></div>
+        <div><span>Date</span><strong id="detailDate">—</strong></div>
+        <div><span>Total</span><strong id="detailTotal">—</strong></div>
+        <div><span>Subtotal</span><strong id="detailSubtotal">—</strong></div>
+        <div><span>Tax</span><strong id="detailTax">—</strong></div>
+        <div><span>Category</span><strong id="detailCategory">—</strong></div>
+        <div><span>Status</span><strong id="detailStatus">—</strong></div>
+        <div><span>Invoice ID</span><strong id="detailInvoiceId">—</strong></div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-head">
+          <strong>Line items</strong>
+          <span id="detailLineItemCount">0</span>
         </div>
+        <div class="line-items" id="detailLineItems"></div>
+      </div>
+
+      <div class="detail-section">
+        <strong>Notification</strong>
+        <p id="detailNotification">—</p>
       </div>
     </div>
   </div>
-</section>
-</main>
-
-<footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-brand-block">
-      <div class="footer-brand">
-        <div class="footer-brand-logo">🧾</div>
-        <span class="footer-brand-name">ReceiptIQ</span>
-      </div>
-      <p class="footer-tagline">
-        A receipt submission interface connected to an Express backend and prepared for a serverless AWS processing pipeline.
-      </p>
-    </div>
-    <div class="footer-bottom">
-      <span class="footer-copy">ReceiptIQ preview</span>
-      <div class="footer-badges">
-        <span class="footer-badge">Landing</span>
-        <span class="footer-badge">Home</span>
-        <span class="footer-badge">Dashboard</span>
-        <span class="footer-badge">Workflow</span>
-        <span class="footer-badge">About</span>
-      </div>
-    </div>
-  </div>
-</footer>
-
-<script src="src/app.js"></script>
+  <script src="src/app.js"></script>
 </body>
 </html>
