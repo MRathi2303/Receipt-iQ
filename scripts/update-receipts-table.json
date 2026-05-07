@@ -1,0 +1,19 @@
+{
+  "TableName": "receiptiq-receipts",
+  "AttributeDefinitions": [
+    { "AttributeName": "userId", "AttributeType": "S" },
+    { "AttributeName": "createdAt", "AttributeType": "S" }
+  ],
+  "GlobalSecondaryIndexUpdates": [
+    {
+      "Create": {
+        "IndexName": "userId-createdAt-index",
+        "KeySchema": [
+          { "AttributeName": "userId", "KeyType": "HASH" },
+          { "AttributeName": "createdAt", "KeyType": "RANGE" }
+        ],
+        "Projection": { "ProjectionType": "ALL" }
+      }
+    }
+  ]
+}

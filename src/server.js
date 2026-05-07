@@ -4,7 +4,6 @@
 // =========================================================
 
 require('dotenv').config();
-const fs         = require('fs');
 const path       = require('path');
 const express    = require('express');
 const cors       = require('cors');
@@ -12,15 +11,27 @@ const helmet     = require('helmet');
 const morgan     = require('morgan');
 const rateLimit  = require('express-rate-limit');
 
+const authRoutes = require('./routes/auth');
 const receiptRoutes = require('./routes/receipts');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const projectRoot = path.join(__dirname, '..');
-const indexPath = path.join(projectRoot, 'index.html');
 
 // ── SECURITY MIDDLEWARE ───────────────────────────────────
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      "default-src": ["'self'"],
+      "script-src": ["'self'"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
+      "img-src": ["'self'", "data:"],
+      "connect-src": ["'self'"]
+    }
+  }
+}));
 app.use(cors({
   // ⚠️  HIGHLIGHT: Replace with your deployed frontend URL
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -42,29 +53,25 @@ app.use(morgan('combined'));
 
 // ── STATIC FRONTEND ───────────────────────────────────────
 app.use('/src', express.static(path.join(projectRoot, 'src'), { index: false }));
+app.get('/vendor/axios.min.js', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'node_modules', 'axios', 'dist', 'axios.min.js'));
+});
 app.get('/styles.css', (req, res) => {
   res.sendFile(path.join(projectRoot, 'styles.css'));
 });
+app.get('/runtime-config.js', (req, res) => {
+  const runtimeConfig = {
+    apiBaseUrl: '/api',
+    apiKey: process.env.API_KEY || 'YOUR_API_KEY_HERE'
+  };
 
-app.get(['/', '/index.html'], (req, res, next) => {
-  fs.readFile(indexPath, 'utf8', (error, html) => {
-    if (error) {
-      next(error);
-      return;
-    }
+  res.type('application/javascript').send(
+    `window.RECEIPTIQ_CONFIG = ${JSON.stringify(runtimeConfig)};`
+  );
+});
 
-    const runtimeConfig = {
-      apiBaseUrl: '/api',
-      apiKey: process.env.API_KEY || 'YOUR_API_KEY_HERE'
-    };
-
-    const injectedHtml = html.replace(
-      '</head>',
-      `  <script>window.RECEIPTIQ_CONFIG = ${JSON.stringify(runtimeConfig)};</script>\n</head>`
-    );
-
-    res.type('html').send(injectedHtml);
-  });
+app.get(['/', '/index.html'], (req, res) => {
+  res.sendFile(path.join(projectRoot, 'index.html'));
 });
 
 // ── HEALTH CHECK ──────────────────────────────────────────
@@ -78,6 +85,7 @@ app.get('/health', (req, res) => {
 
 // ── ROUTES ────────────────────────────────────────────────
 app.use('/api/receipts', receiptRoutes);
+app.use('/api/auth', authRoutes);
 
 // ── ERROR HANDLER ─────────────────────────────────────────
 app.use(errorHandler);

@@ -1,0 +1,30 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadReceiptBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:HeadObject"
+      ],
+      "Resource": "arn:aws:s3:::receiptiq-uploads-259030234749-ap-south-1/*"
+    },
+    {
+      "Sid": "WriteReceiptTable",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem"
+      ],
+      "Resource": "arn:aws:dynamodb:ap-south-1:259030234749:table/receiptiq-receipts"
+    },
+    {
+      "Sid": "PublishUserNotifications",
+      "Effect": "Allow",
+      "Action": [
+        "sns:Publish"
+      ],
+      "Resource": "arn:aws:sns:ap-south-1:259030234749:receiptiq-user-*"
+    }
+  ]
+}

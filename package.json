@@ -4,28 +4,37 @@
   "description": "ReceiptIQ — Intelligent Receipt Processing Pipeline API",
   "main": "src/server.js",
   "scripts": {
-    "start":   "node src/server.js",
-    "dev":     "nodemon src/server.js",
-    "test":    "jest --coverage",
-    "lambda":  "zip -r lambda.zip lambdaHandler.js node_modules package.json package-lock.json"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --coverage"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "data/*",
+      "coverage/*"
+    ]
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb":    "^3.0.0",
-    "@aws-sdk/client-s3":          "^3.0.0",
-    "@aws-sdk/client-sns":         "^3.0.0",
-    "@aws-sdk/client-textract":    "^3.0.0",
-    "@aws-sdk/s3-request-presigner":"^3.0.0",
-    "@aws-sdk/util-dynamodb":      "^3.0.0",
-    "cors":                        "^2.8.5",
-    "dotenv":                      "^16.0.0",
-    "express":                     "^4.18.0",
-    "express-rate-limit":          "^7.0.0",
-    "helmet":                      "^7.0.0",
-    "morgan":                      "^1.10.0",
-    "multer":                      "^1.4.5-lts.1"
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/client-sesv2": "^3.0.0",
+    "@aws-sdk/client-sns": "^3.901.0",
+    "@aws-sdk/client-textract": "^3.0.0",
+    "@aws-sdk/s3-request-presigner": "^3.0.0",
+    "@aws-sdk/util-dynamodb": "^3.0.0",
+    "axios": "^1.14.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0",
+    "express-rate-limit": "^7.0.0",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
-    "jest":    "^29.0.0",
+    "jest": "^29.0.0",
     "nodemon": "^3.0.0"
   },
   "engines": {

@@ -30,7 +30,7 @@ function errorHandler(err, req, res, next) {
     return res.status(413).json({ error: 'File too large. Maximum size is 10 MB.' });
   }
   // Multer file-type error
-  if (err.message && err.message.includes('Only JPG')) {
+  if (err.message && err.message.includes('Only PDF')) {
     return res.status(415).json({ error: err.message });
   }
 

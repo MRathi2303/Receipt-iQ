@@ -10,9 +10,9 @@ const {
 const { marshall } = require('@aws-sdk/util-dynamodb');
 
 const {
-  SNSClient,
-  PublishCommand
-} = require('@aws-sdk/client-sns');
+  SESv2Client,
+  SendEmailCommand
+} = require('@aws-sdk/client-sesv2');
 
 const {
   S3Client,
@@ -21,13 +21,12 @@ const {
 
 const REGION = process.env.AWS_REGION || 'us-east-1';
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'YOUR_DYNAMODB_TABLE_NAME';
-const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN || '';
 const SES_FROM_EMAIL = process.env.SES_FROM_EMAIL || 'noreply@yourdomain.com';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://YOUR_FRONTEND_URL';
 
 const textract = new TextractClient({ region: REGION });
 const dynamo = new DynamoDBClient({ region: REGION });
-const sns = new SNSClient({ region: REGION });
+const ses = new SESv2Client({ region: REGION });
 const s3 = new S3Client({ region: REGION });
 
 const SUMMARY_FIELD_ALIASES = {
@@ -70,14 +69,22 @@ exports.handler = async (event) => {
       const context = buildReceiptContext(bucket, key, metadata);
       const extracted = await runTextract(bucket, key);
       const result = buildResultRecord(context, extracted);
+      await writeToDatabase(result);
+
+      const emailOutcome = await notifyUser(result);
+
+      result.emailDeliveryStatus = emailOutcome.status;
+      result.emailMessageId = emailOutcome.messageId || null;
+      result.emailErrorMessage = emailOutcome.errorMessage || null;
+      result.updatedAt = new Date().toISOString();
 
       await writeToDatabase(result);
-      await notifyUser(result);
 
       console.log(`Processed successfully: ${result.docId}`);
       results.push({ docId: result.docId, status: 'processed' });
     } catch (error) {
       console.error(`Failed processing ${key}:`, error);
+      await writeFailureRecord(bucket, key, error);
       results.push({ key, status: 'failed', error: error.message });
     }
   }
@@ -228,6 +235,7 @@ function buildResultRecord(context, extracted) {
     category,
     confidence: extracted.confidence,
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     status: 'processed'
   };
 }
@@ -254,26 +262,52 @@ async function writeToDatabase(result) {
 }
 
 async function notifyUser(result) {
-  if (!SNS_TOPIC_ARN) {
-    console.warn('SNS topic ARN not configured. Skipping notification publish.');
-    return;
+  if (!SES_FROM_EMAIL || SES_FROM_EMAIL === 'noreply@yourdomain.com') {
+    console.warn('SES sender email not configured. Skipping email send.');
+    return {
+      status: 'skipped',
+      messageId: null,
+      errorMessage: 'SES_FROM_EMAIL is not configured.'
+    };
   }
 
-  const message = buildEmailMessage(result);
+  try {
+    const command = new SendEmailCommand({
+      FromEmailAddress: SES_FROM_EMAIL,
+      Destination: {
+        ToAddresses: [result.email]
+      },
+      Content: {
+        Simple: {
+          Subject: {
+            Data: `ReceiptIQ: ${result.merchant} receipt processed`
+          },
+          Body: {
+            Text: {
+              Data: buildEmailMessage(result)
+            },
+            Html: {
+              Data: buildEmailHtml(result)
+            }
+          }
+        }
+      }
+    });
 
-  const command = new PublishCommand({
-    TopicArn: SNS_TOPIC_ARN,
-    Subject: `ReceiptIQ: ${result.merchant} receipt processed`,
-    Message: JSON.stringify({
-      email: result.email,
-      from: SES_FROM_EMAIL,
-      subject: `Your receipt from ${result.merchant} is ready`,
-      body: message,
-      docId: result.docId
-    })
-  });
-
-  await sns.send(command);
+    const response = await ses.send(command);
+    return {
+      status: 'sent',
+      messageId: response.MessageId || null,
+      errorMessage: null
+    };
+  } catch (error) {
+    console.error(`Failed sending email for ${result.docId}:`, error);
+    return {
+      status: 'failed',
+      messageId: null,
+      errorMessage: error.message
+    };
+  }
 }
 
 function buildEmailMessage(result) {
@@ -308,10 +342,71 @@ function buildEmailMessage(result) {
   ].filter(Boolean).join('\n');
 }
 
+function buildEmailHtml(result) {
+  const lineItems = (result.lineItems || [])
+    .slice(0, 8)
+    .map((item) => {
+      const pieces = [escapeHtml(item.name || 'Item')];
+      if (item.quantity) pieces.push(`qty ${escapeHtml(String(item.quantity))}`);
+      if (item.totalPrice?.display) pieces.push(escapeHtml(item.totalPrice.display));
+      return `<li>${pieces.join(' | ')}</li>`;
+    })
+    .join('');
+
+  return [
+    '<div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">',
+    '<h2 style="margin-bottom: 8px;">Your receipt has been processed</h2>',
+    '<p>ReceiptIQ has finished extracting your receipt details.</p>',
+    '<table style="border-collapse: collapse; margin: 16px 0;">',
+    buildEmailRow('Document ID', result.docId),
+    buildEmailRow('Merchant', result.merchant || 'Unknown'),
+    buildEmailRow('Date', result.date || 'Not detected'),
+    buildEmailRow('Category', result.category || 'other'),
+    buildEmailRow('Subtotal', result.subtotal || 'Not detected'),
+    buildEmailRow('Tax', result.tax || 'Not detected'),
+    buildEmailRow('Total', result.total || 'Not detected'),
+    buildEmailRow('Confidence', result.confidence ? `${result.confidence}%` : 'Not available'),
+    '</table>',
+    lineItems ? `<p><strong>Line items</strong></p><ul>${lineItems}</ul>` : '',
+    `<p>Open your app: <a href="${escapeHtml(FRONTEND_URL)}">${escapeHtml(FRONTEND_URL)}</a></p>`,
+    '<p>Thank you for using ReceiptIQ.</p>',
+    '</div>'
+  ].filter(Boolean).join('');
+}
+
 async function getS3Metadata(bucket, key) {
   const command = new HeadObjectCommand({ Bucket: bucket, Key: key });
   const response = await s3.send(command);
   return response.Metadata || {};
+}
+
+async function writeFailureRecord(bucket, key, error) {
+  const docId = key.split('/').pop().replace(/\.[^.]+$/, '');
+  const timestamp = new Date().toISOString();
+
+  await writeToDatabase({
+    docId,
+    bucket,
+    s3Key: key,
+    originalName: key.split('/').pop(),
+    email: null,
+    merchant: null,
+    date: null,
+    total: null,
+    subtotal: null,
+    tax: null,
+    currency: null,
+    invoiceId: null,
+    paymentTerms: null,
+    lineItems: [],
+    category: 'other',
+    confidence: null,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    status: 'failed',
+    emailDeliveryStatus: 'not_sent',
+    errorMessage: error.message
+  });
 }
 
 function extractBestField(fields, aliases) {
@@ -486,6 +581,19 @@ function sanitizeText(value) {
 function sanitizeEmail(value) {
   const email = sanitizeText(value);
   return email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+}
+
+function buildEmailRow(label, value) {
+  return `<tr><td style="padding: 6px 12px 6px 0; font-weight: 600;">${escapeHtml(label)}</td><td style="padding: 6px 0;">${escapeHtml(String(value || ''))}</td></tr>`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function emptyExtraction() {

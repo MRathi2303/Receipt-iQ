@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ReceiptIQ</title>
+  <meta name="description" content="ReceiptIQ — Upload receipt PDFs and images, extract structured expense data with AI, and manage your receipt history from one cloud workspace." />
+  <title>ReceiptIQ — Intelligent Receipt Processing</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260501-ui3" />
+  <link rel="stylesheet" href="styles.css?v=20260507-v2" />
 </head>
 <body>
   <div class="app-shell">
@@ -22,7 +23,7 @@
         </div>
 
         <div class="hero-copy">
-          <div class="hero-pill">PDF intelligence</div>
+          <div class="hero-pill">PDF &amp; image intelligence</div>
           <h1>Turn receipt PDFs into a clean expense workspace.</h1>
           <p>
             Upload, process, and revisit every receipt from one account-first dashboard built for your project pipeline.
@@ -32,7 +33,7 @@
         <div class="hero-metrics" aria-label="ReceiptIQ capabilities">
           <div>
             <span>Format</span>
-            <strong>PDF</strong>
+            <strong>PDF &amp; IMG</strong>
           </div>
           <div>
             <span>Storage</span>
@@ -120,7 +121,7 @@
           <div>
             <div class="hero-pill">Logged in workspace</div>
             <h1 class="workspace-title">Receipt command center</h1>
-            <p class="workspace-subtitle">Upload PDFs, watch processing, and scan your account history.</p>
+            <p class="workspace-subtitle">Upload PDFs or images, watch processing, and scan your account history.</p>
           </div>
         </div>
         <div class="workspace-user">
@@ -145,10 +146,10 @@
 
           <div class="drop-zone" id="dropZone">
             <div class="drop-icon">+</div>
-            <strong>Drag and drop a receipt PDF</strong>
-            <span>Only PDF files up to 10 MB are accepted.</span>
-            <button class="secondary-btn" id="chooseFileBtn" type="button">Choose PDF</button>
-            <input type="file" id="fileInput" accept=".pdf,application/pdf" hidden />
+            <strong>Drag and drop a receipt PDF or image</strong>
+            <span>PDF, JPG, PNG, or WebP up to 10 MB.</span>
+            <button class="secondary-btn" id="chooseFileBtn" type="button">Choose File</button>
+            <input type="file" id="fileInput" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden />
           </div>
 
           <div class="file-chip hidden" id="filePreview">
@@ -165,6 +166,8 @@
               <option value="utilities">Utilities</option>
               <option value="shopping">Shopping</option>
               <option value="medical">Medical</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="education">Education</option>
               <option value="other">Other</option>
             </select>
           </label>
@@ -246,6 +249,22 @@
               <div><span>Category</span><strong id="latestCategory">—</strong></div>
               <div><span>Status</span><strong id="latestStatus">—</strong></div>
             </div>
+            <div class="latest-products hidden" id="latestProducts">
+              <span>Products</span>
+              <div class="product-tags" id="latestProductTags"></div>
+            </div>
+          </div>
+
+          <!-- Analytics charts -->
+          <div class="analytics-section" id="analyticsSection">
+            <div class="analytics-card">
+              <strong>Spending by category</strong>
+              <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+            </div>
+            <div class="analytics-card">
+              <strong>Monthly trend</strong>
+              <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+            </div>
           </div>
         </section>
 
@@ -256,7 +275,7 @@
               <h2>Receipt history</h2>
             </div>
           </div>
-          <div class="history-empty" id="historyEmpty">No receipts yet. Upload your first PDF to build your history.</div>
+          <div class="history-empty" id="historyEmpty">No receipts yet. Upload your first PDF or image to build your history.</div>
           <div class="history-list" id="historyList"></div>
         </section>
       </main>
@@ -265,6 +284,7 @@
 
   <script src="/runtime-config.js"></script>
   <script src="/vendor/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 
   <div class="modal" id="detailModal">
     <div class="modal-backdrop" id="detailBackdrop"></div>
@@ -275,7 +295,11 @@
           <h3 id="detailMerchant">—</h3>
           <p id="detailSubtitle">—</p>
         </div>
-        <button class="ghost-btn" id="detailClose">Close</button>
+        <div class="modal-actions">
+          <button class="secondary-btn" id="detailDownload" type="button">View Original</button>
+          <button class="delete-btn" id="detailDelete" type="button">Delete</button>
+          <button class="ghost-btn" id="detailClose">Close</button>
+        </div>
       </div>
 
       <div class="detail-grid">
