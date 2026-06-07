@@ -1386,14 +1386,40 @@ def write_failure_record(ctx: Optional[dict], bucket: str, key: str, err: Except
     })
 
 
+def _check_topic_has_confirmed_subscription(topic_arn: str) -> bool:
+    """Check live SNS state: does this topic have at least one confirmed subscription?"""
+    try:
+        paginator_token = None
+        while True:
+            kwargs = {"TopicArn": topic_arn}
+            if paginator_token:
+                kwargs["NextToken"] = paginator_token
+            resp = sns.list_subscriptions_by_topic(**kwargs)
+            for sub in resp.get("Subscriptions", []):
+                arn = sub.get("SubscriptionArn", "")
+                if arn.startswith("arn:aws:sns:"):
+                    # Real ARN means it's confirmed
+                    return True
+            paginator_token = resp.get("NextToken")
+            if not paginator_token:
+                break
+    except Exception as exc:
+        logger.warning("Could not verify topic subscriptions for %s: %s", topic_arn, exc)
+    return False
+
+
 def send_notification(result: dict) -> dict:
     topic_arn = result.get("notificationTopicArn")
-    if result.get("notificationStatus") != "verified":
-        return {"status": "pending_verification", "messageId": None,
-                "errorMessage": "SNS subscription not yet verified."}
     if not topic_arn:
         return {"status": "skipped", "messageId": None,
                 "errorMessage": "No SNS topic configured."}
+
+    # Don't trust the stale notificationStatus from S3 metadata.
+    # Instead, check the live SNS subscription state.
+    if not _check_topic_has_confirmed_subscription(topic_arn):
+        return {"status": "pending_verification", "messageId": None,
+                "errorMessage": "SNS subscription not yet verified."}
+
     try:
         display_merchant = result.get("platform") or result.get("merchant") or "Receipt"
         subject  = f"ReceiptIQ: {display_merchant}"[:100]

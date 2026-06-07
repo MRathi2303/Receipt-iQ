@@ -128,7 +128,7 @@ async function refreshUserNotifications(user) {
     return updateLocalNotificationState(user.id, {
       notificationStatus: status,
       notificationMessage: message,
-      snsSubscriptionArn: subscription.SubscriptionArn
+      snsSubscriptionArn: isRealArn(subscription.SubscriptionArn) ? subscription.SubscriptionArn : null
     });
   } catch (error) {
     console.error('Notification refresh error:', error);
@@ -148,7 +148,10 @@ async function ensureUserTopic(user) {
 
 async function ensureEmailSubscription(topicArn, email) {
   const existing = await findSubscription(topicArn, email);
-  if (existing && existing.SubscriptionArn !== 'Deleted') {
+  // Only reuse the subscription if it has a real confirmed/confirmable ARN.
+  // "PendingConfirmation" and "Deleted" are NOT real ARNs — re-subscribe
+  // so the user gets a fresh confirmation email.
+  if (existing && isRealArn(existing.SubscriptionArn)) {
     return existing.SubscriptionArn;
   }
 

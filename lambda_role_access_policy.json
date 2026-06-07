@@ -22,7 +22,8 @@
       "Sid": "PublishUserNotifications",
       "Effect": "Allow",
       "Action": [
-        "sns:Publish"
+        "sns:Publish",
+        "sns:ListSubscriptionsByTopic"
       ],
       "Resource": "arn:aws:sns:ap-south-1:259030234749:receiptiq-user-*"
     }
