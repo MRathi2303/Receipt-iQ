@@ -17,6 +17,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const projectRoot = path.join(__dirname, '..');
+const frontendRoot = path.join(__dirname, '../../frontend');
 
 // ── SECURITY MIDDLEWARE ───────────────────────────────────
 app.use(helmet({
@@ -52,12 +53,15 @@ app.use(express.json({ limit: '1mb' }));
 app.use(morgan('combined'));
 
 // ── STATIC FRONTEND ───────────────────────────────────────
-app.use('/src', express.static(path.join(projectRoot, 'src'), { index: false }));
+app.use(express.static(frontendRoot, { index: false }));
 app.get('/vendor/axios.min.js', (req, res) => {
-  res.sendFile(path.join(projectRoot, 'node_modules', 'axios', 'dist', 'axios.min.js'));
+  res.sendFile(path.join(frontendRoot, 'vendor', 'axios.min.js'));
 });
 app.get('/styles.css', (req, res) => {
-  res.sendFile(path.join(projectRoot, 'styles.css'));
+  res.sendFile(path.join(frontendRoot, 'styles.css'));
+});
+app.get('/app.js', (req, res) => {
+  res.sendFile(path.join(frontendRoot, 'app.js'));
 });
 app.get('/runtime-config.js', (req, res) => {
   const runtimeConfig = {
@@ -71,7 +75,7 @@ app.get('/runtime-config.js', (req, res) => {
 });
 
 app.get(['/', '/index.html'], (req, res) => {
-  res.sendFile(path.join(projectRoot, 'index.html'));
+  res.sendFile(path.join(frontendRoot, 'index.html'));
 });
 
 // ── HEALTH CHECK ──────────────────────────────────────────
