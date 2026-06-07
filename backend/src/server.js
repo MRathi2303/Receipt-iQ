@@ -57,6 +57,9 @@ app.use(express.static(frontendRoot, { index: false }));
 app.get('/vendor/axios.min.js', (req, res) => {
   res.sendFile(path.join(frontendRoot, 'vendor', 'axios.min.js'));
 });
+app.get('/vendor/chart.umd.min.js', (req, res) => {
+  res.sendFile(path.join(frontendRoot, 'vendor', 'chart.umd.min.js'));
+});
 app.get('/styles.css', (req, res) => {
   res.sendFile(path.join(frontendRoot, 'styles.css'));
 });
