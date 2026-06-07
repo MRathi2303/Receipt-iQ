@@ -1049,7 +1049,11 @@ def _is_table_junk(text: str) -> bool:
     low  = text.lower()
     junk = ("total", "subtotal", "tax", "gst", "amount", "grand", "net",
             "description", "item", "product", "sl no", "s.no", "sr no", "#")
-    return any(low.startswith(f) for f in junk) or len(text) < 2
+    if any(low.startswith(f) for f in junk) or len(text) < 2:
+        return True
+    if re.fullmatch(r"[₹$€£]?\s*[\d,.-]+", text):
+        return True
+    return False
 
 
 class Line:

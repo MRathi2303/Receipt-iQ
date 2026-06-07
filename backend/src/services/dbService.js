@@ -190,7 +190,9 @@ function extractNumericValue(value) {
     return value;
   }
 
-  const numeric = Number.parseFloat(String(value).replace(/[^0-9.-]/g, ''));
+  const match = String(value).match(/-?[\d,]+(?:\.\d+)?/);
+  if (!match) return null;
+  const numeric = parseFloat(match[0].replace(/,/g, ''));
   return Number.isFinite(numeric) ? numeric : null;
 }
 

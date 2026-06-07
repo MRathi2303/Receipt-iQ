@@ -344,8 +344,10 @@ function renderMonthlyChart(items) {
 
 function extractNumericFromDisplay(val) {
   if(!val||val==='—') return 0;
-  const n = parseFloat(String(val).replace(/[^0-9.-]/g,''));
-  return isFinite(n)?n:0;
+  const match = String(val).match(/-?[\d,]+(?:\.\d+)?/);
+  if(!match) return 0;
+  const n = parseFloat(match[0].replace(/,/g, ''));
+  return isFinite(n) ? n : 0;
 }
 
 // ── Receipt detail + actions ──────────────────────────────

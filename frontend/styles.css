@@ -749,7 +749,7 @@ button:disabled {
 /* Analytics */
 .analytics-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   margin-top: 18px;
 }
@@ -770,6 +770,7 @@ button:disabled {
 .chart-container {
   position: relative;
   height: 180px;
+  width: 100%;
 }
 
 .history-empty {

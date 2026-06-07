@@ -98,7 +98,7 @@ async function refreshUserNotifications(user) {
   try {
     const subscription = await findSubscription(user.snsTopicArn, user.email);
 
-    if (!subscription || !isRealArn(subscription.SubscriptionArn)) {
+    if (!subscription || subscription.SubscriptionArn === 'Deleted') {
       // Subscription is completely gone (deleted/unsubscribed/expired).
       // Re-subscribe once to send a fresh confirmation email.
       try {
@@ -148,10 +148,9 @@ async function ensureUserTopic(user) {
 
 async function ensureEmailSubscription(topicArn, email) {
   const existing = await findSubscription(topicArn, email);
-  // Only reuse the subscription if it has a real confirmed/confirmable ARN.
-  // "PendingConfirmation" and "Deleted" are NOT real ARNs — re-subscribe
-  // so the user gets a fresh confirmation email.
-  if (existing && isRealArn(existing.SubscriptionArn)) {
+  // "PendingConfirmation" means the email was sent and we are waiting.
+  // Re-subscribing spams the user and triggers automatic unsubscribes by email providers.
+  if (existing && existing.SubscriptionArn !== 'Deleted') {
     return existing.SubscriptionArn;
   }
 
