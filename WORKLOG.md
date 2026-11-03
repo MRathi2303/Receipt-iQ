@@ -214,4 +214,4 @@ entry before finishing.
 - Request: Finish cleanup, publish the verified project to GitHub, and prepare resume-ready project points.
 - Files changed or reviewed: final tracked application, deployment, documentation, CI, and agent-skill files; no credentials, environment files, receipt data, or generated artifacts were staged.
 - Validation: Python compilation, JavaScript syntax check, backend tests passed (8/8), `docker compose config`, `git diff --check`, Hallmark lint (`0 FAIL`), live frontend browser verification, and production dependency audit (one existing moderate `qs` advisory; CI threshold is high).
-- Remaining work/blockers: push the final commit to `https://github.com/MRathi2303/Receipt-iQ`.
+- Remaining work/blockers: none. Final project history is pushed to https://github.com/MRathi2303/Receipt-iQ on `main`; the existing remote history was preserved as a merge parent without replacing the verified final tree.
