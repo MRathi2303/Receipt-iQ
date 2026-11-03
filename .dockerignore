@@ -1,0 +1,9 @@
+.git
+.github
+.vscode
+node_modules
+coverage
+.env
+data
+__pycache__
+*.pyc
