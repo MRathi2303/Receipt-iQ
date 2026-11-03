@@ -43,7 +43,7 @@ limitation instead of claiming the task is complete.
 - AWS provisioning: manual Console/CLI only; Terraform is intentionally not used
 - Cost target: no always-on compute; AWS usage and retained storage can still incur charges
 - Active API endpoint: `https://fn4khftdk3.execute-api.us-east-1.amazonaws.com`
-- Active frontend endpoint: `https://frontend-neon-omega-72.vercel.app`
+- Active frontend endpoint: `https://receipt-iq-live.vercel.app`
 - Active frontend fallback: `https://receiptiq-frontend-357275711997.s3.us-east-1.amazonaws.com/index.html`
 - CloudFront creation is blocked until AWS account verification; S3 HTTPS object hosting is active
 - Monitoring: 14-day Lambda log retention and alarms for API errors, processor errors, and visible DLQ messages

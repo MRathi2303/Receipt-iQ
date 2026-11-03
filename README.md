@@ -62,7 +62,7 @@ AWS keys or hosted-model credentials.
 
 ## Live deployment
 
-- Frontend: [ReceiptIQ on Vercel](https://frontend-neon-omega-72.vercel.app)
+- Frontend: [ReceiptIQ on Vercel](https://receipt-iq-live.vercel.app)
 - API health: [AWS API health endpoint](https://fn4khftdk3.execute-api.us-east-1.amazonaws.com/health)
 - AWS frontend fallback: [S3 frontend](https://receiptiq-frontend-357275711997.s3.us-east-1.amazonaws.com/index.html)
 

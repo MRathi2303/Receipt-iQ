@@ -221,3 +221,10 @@ entry before finishing.
 - Files changed: [WORKLOG.md](WORKLOG.md) only; the attempted automatic dependency update was not retained because it introduced additional development-tool advisories and required breaking upgrades.
 - Validation: clean `npm ci`, backend tests passed (8/8), and `npm audit --omit=dev --audit-level=high` passed its configured CI threshold. One moderate transitive `qs` advisory remains in the existing Express dependency tree; resolving it requires a dependency upgrade beyond the current stable lockfile.
 - Remaining work/blockers: none for the requested production publish; final `main` remains pushed at the prior verified commit plus this log entry.
+
+### 2026-11-04 00:06 IST — Copilot SDK in VS Code
+- Request: Change the Vercel production URL.
+- Files changed: [README.md](README.md), [AI-CONTEXT.md](AI-CONTEXT.md), and this work log.
+- Deployment changes: renamed the Vercel project from `frontend` to `receipt-iq-live` and redeployed the production frontend.
+- Validation: `https://receipt-iq-live.vercel.app` returns HTTP 200 and serves the ReceiptIQ frontend; the AWS API endpoint is unchanged.
+- Remaining work/blockers: none. The previous generated URL may continue to resolve, but the canonical public URL is now https://receipt-iq-live.vercel.app.
