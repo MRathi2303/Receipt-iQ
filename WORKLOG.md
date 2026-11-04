@@ -6,7 +6,7 @@ entry before finishing.
 ## Current state
 
 - AWS resources are configured manually using
-  [`docs/AWS-MANUAL-SETUP.md`](docs/AWS-MANUAL-SETUP.md).
+  [`docs/AWS-INFRASTRUCTURE.md`](docs/AWS-INFRASTRUCTURE.md).
 - LocalStack remains available for local S3 and DynamoDB development.
 - SNS/email-verification functionality has been removed.
 - The Lambda is built as a container image and pushed to ECR manually.
@@ -240,3 +240,9 @@ entry before finishing.
 - Files changed: README, AWS deployment runbook, processor documentation, frontend comment metadata, AI context, and removal of bundled agent skills, skill locks, Vercel state, editor settings, and generated local artifacts.
 - Validation: final tracked tree reduced to the application, infrastructure documentation, CI, and required continuity files; no recruiter-facing documentation contains Hallmark, Cinetic, Scroll Craft, ECS Fargate, SES, or SNS references; backend tests passed 8/8, Python and JavaScript syntax checks passed, Docker Compose validation passed, dependency audit passed the configured high-severity threshold, and staged diff check passed.
 - Remaining work/blockers: none. Local `main` and GitHub `main` are synchronized at commit `62c711a`.
+
+### 2026-11-04 15:20 IST — Copilot SDK in VS Code
+- Request: Rewrite project documentation in my own voice and replace the AWS manual setup guide with an infrastructure and resource-role reference.
+- Files changed: [README.md](README.md), [lambda_pdf_processor/README.md](lambda_pdf_processor/README.md), [infra/README.md](infra/README.md), [docs/AWS-INFRASTRUCTURE.md](docs/AWS-INFRASTRUCTURE.md), [AGENTS.md](AGENTS.md), [AI-CONTEXT.md](AI-CONTEXT.md), and this work log.
+- Validation: documentation links updated, README whitespace normalized, `git diff --check`, Python syntax, JavaScript syntax, Docker Compose configuration, and backend tests passed.
+- Remaining work/blockers: commit and push the documentation update.

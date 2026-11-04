@@ -28,5 +28,5 @@ work is complete.
   customer receipt data.
 - Preserve the deterministic OCR/parser fallback when changing AI integration.
 - Run focused tests and syntax checks for changed code before finishing.
-- Use [`docs/AWS-MANUAL-SETUP.md`](docs/AWS-MANUAL-SETUP.md) as the source of
+- Use [`docs/AWS-INFRASTRUCTURE.md`](docs/AWS-INFRASTRUCTURE.md) as the source of
   truth for AWS resource names, policies, and wiring.

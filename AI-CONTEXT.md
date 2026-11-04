@@ -59,7 +59,7 @@ limitation instead of claiming the task is complete.
 
 ## Important files
 
-- Manual AWS runbook: [`docs/AWS-MANUAL-SETUP.md`](docs/AWS-MANUAL-SETUP.md)
+- AWS infrastructure reference: [`docs/AWS-INFRASTRUCTURE.md`](docs/AWS-INFRASTRUCTURE.md)
 - Lambda build/deploy notes: [`lambda_pdf_processor/README.md`](lambda_pdf_processor/README.md)
 - Application overview: [`README.md`](README.md)
 - Local stack: [`docker-compose.yml`](docker-compose.yml)

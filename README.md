@@ -1,50 +1,58 @@
 # ReceiptIQ
 
-ReceiptIQ is an event-driven receipt processing platform built to demonstrate
-production-oriented cloud and DevOps practices.
+I built ReceiptIQ as a serverless receipt-processing project to practice
+event-driven AWS architecture, containerized workloads, and production
+operations.
 
-## Architecture
+## What I built
+
+When a user uploads a receipt, the API stores the file in S3 and creates the
+receipt record in DynamoDB. S3 sends an event to SQS, and the processor Lambda
+consumes that message, extracts the receipt data, and updates DynamoDB.
 
 ```text
-Vercel static frontend
+Vercel frontend
         |
-API Gateway HTTP API -> API Lambda -> S3 and DynamoDB
+API Gateway -> API Lambda -> S3 and DynamoDB
         |
-S3 receipt upload -> SQS queue -> processor Lambda -> DynamoDB
-                                      |
-                              Secrets Manager -> Gemini
+S3 upload -> SQS -> processor Lambda -> DynamoDB
+                         |
+                 Secrets Manager -> Gemini
 ```
 
-The processing path is asynchronous and uses an SQS dead-letter queue for
-retries and failures. Deterministic OCR and parsing remain available when the
-hosted AI provider is unavailable.
+The processor uses direct PDF text extraction, Tesseract OCR, and deterministic
+parsing. I also added Google Gemini as an optional enhancement, while keeping
+the deterministic path available if the model is unavailable.
 
-## Capabilities
+## Main features
 
-- Secure JWT authentication with bcrypt password hashing.
-- PDF and image receipt uploads with ownership isolation.
-- OCR, deterministic extraction, and optional Google Gemini enhancement.
-- Receipt history, structured details, analytics, and deletion controls.
-- Retry and DLQ handling for asynchronous processing.
-- Containerized Python processing with Docker Compose and LocalStack.
-- GitHub Actions validation for tests, audits, and container builds.
+- JWT authentication with bcrypt password hashing.
+- User-owned PDF and image receipt uploads.
+- Asynchronous processing through S3, SQS, Lambda, and DynamoDB.
+- Receipt history, structured details, analytics, and deletion.
+- SQS retry handling and a dead-letter queue for failed messages.
+- Runtime AI secrets loaded from AWS Secrets Manager.
+- Docker Compose and LocalStack for local development.
+- GitHub Actions checks for tests, audits, and container builds.
 
-## Local development
+## Run locally
 
-Requirements: Docker Desktop, Node.js 22+, and Python 3.12+ for direct
-processor development.
+I use Docker Compose to run the frontend, API, and LocalStack:
 
 ```bash
 docker compose up --build
 ```
 
-Open [http://localhost:8080](http://localhost:8080). The API health endpoint is
-available at [http://localhost:4000/health](http://localhost:4000/health).
-LocalStack initializes development S3 and DynamoDB resources automatically.
+The frontend is available at [http://localhost:8080](http://localhost:8080).
+The API health check is available at
+[http://localhost:4000/health](http://localhost:4000/health).
 
-## Google Gemini
+Local development does not need AWS credentials or a Gemini key. The
+deterministic OCR/parser path works without hosted AI.
 
-For local processor development, configure:
+## Gemini configuration
+
+For local processor development:
 
 ```dotenv
 AI_PROVIDER=gemini
@@ -52,29 +60,21 @@ GOOGLE_API_KEY=replace-me
 GOOGLE_MODEL=gemini-3.8-flash
 ```
 
-In AWS, the processor loads the key at runtime from Secrets Manager through
-`AI_SECRET_ARN`. Never put credentials in a Dockerfile, image build argument,
-frontend file, or GitHub repository. Deterministic extraction remains the
-fallback if Gemini is unavailable.
+In AWS, the processor reads the key from Secrets Manager at runtime. I do not
+put credentials in Dockerfiles, image build arguments, frontend files, or Git.
 
-## Deployment
-
-AWS resources are configured manually using the runbook in
-[`docs/AWS-MANUAL-SETUP.md`](docs/AWS-MANUAL-SETUP.md). The processor image
-build and deployment steps are documented in
-[`lambda_pdf_processor/README.md`](lambda_pdf_processor/README.md).
-
-Current deployment:
+## Live deployment
 
 - Frontend: [receipt-iq-live.vercel.app](https://receipt-iq-live.vercel.app)
-- API health: [AWS API health endpoint](https://fn4khftdk3.execute-api.us-east-1.amazonaws.com/health)
-- Frontend fallback:
-  [S3 HTTPS endpoint](https://receiptiq-frontend-357275711997.s3.us-east-1.amazonaws.com/index.html)
+- API health:
+  [AWS API endpoint](https://fn4khftdk3.execute-api.us-east-1.amazonaws.com/health)
+- S3 frontend fallback:
+  [HTTPS endpoint](https://receiptiq-frontend-357275711997.s3.us-east-1.amazonaws.com/index.html)
 
-The frontend is static. Authentication, uploads, processing, and storage use
-the serverless AWS API and pipeline.
+The complete deployed infrastructure and the role of each resource are listed
+in [`docs/AWS-INFRASTRUCTURE.md`](docs/AWS-INFRASTRUCTURE.md).
 
-## Verification
+## Checks I run before pushing
 
 ```bash
 cd backend
