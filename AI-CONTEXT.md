@@ -29,13 +29,12 @@ limitation instead of claiming the task is complete.
 - Reliability path: S3 -> SQS -> Lambda -> DynamoDB, with a DLQ
 - Active AWS profile/region: `aws_second` / `us-east-1`
 - Lambda function: `receiptiq-processor`
-- Lambda image: ECR `receiptiq-processor`, immutable tag `lambda-20261028000642`
+- Lambda image: ECR `receiptiq-processor`, deployed with immutable tags
 - S3 event notification: `receipt-iq-bkt/users/` ObjectCreated -> `receiptiq-processing-queue`
 - SQS event source mapping: `974147cd-8c74-4bcc-94d5-58f4bd2d6e68` -> `receiptiq-processor`
 - Backend hosting: API Gateway HTTP API -> Lambda (serverless; ECS is not required)
 - Frontend hosting: Vercel production project `frontend`, with AWS S3 HTTPS fallback
-- Frontend motion: lightweight Scroll Craft-inspired scroll reveals and progress indicator; no runtime dependency
-- Frontend visual direction: Hallmark modern-minimal guardrails and a Cinetic-inspired scan-to-ready hero sequence implemented with native CSS
+- Frontend: static HTML/CSS/JavaScript deployed on Vercel
 - Google Gemini is the supported hosted AI enhancement path; the deployed processor uses `gemini-3.8-flash` and loads `GOOGLE_API_KEY` from Secrets Manager at cold start via `AI_SECRET_ARN`. Never use a Docker build argument. Deterministic OCR/parser extraction remains the fallback.
 - Parsing: pdfplumber, Tesseract, deterministic parser
 - Optional AI: hosted provider using Gemini or OpenAI-compatible API
@@ -45,8 +44,8 @@ limitation instead of claiming the task is complete.
 - Active API endpoint: `https://fn4khftdk3.execute-api.us-east-1.amazonaws.com`
 - Active frontend endpoint: `https://receipt-iq-live.vercel.app`
 - Active frontend fallback: `https://receiptiq-frontend-357275711997.s3.us-east-1.amazonaws.com/index.html`
-- CloudFront creation is blocked until AWS account verification; S3 HTTPS object hosting is active
-- Monitoring: 14-day Lambda log retention and alarms for API errors, processor errors, and visible DLQ messages
+- CloudFront creation is blocked until AWS account verification; S3 HTTPS object hosting is the active fallback
+- Monitoring: finite Lambda log retention and alarms for API errors, processor errors, and visible DLQ messages
 
 ## Explicit product decisions
 

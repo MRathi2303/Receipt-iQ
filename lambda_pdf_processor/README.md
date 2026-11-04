@@ -77,7 +77,7 @@ the pushed image. Set:
 
 The Lambda role needs CloudWatch Logs, S3 `GetObject`/`HeadObject`, DynamoDB
 `GetItem`/`PutItem`/`UpdateItem`, and SQS consume permissions when the SQS
-reliability path is enabled. It does not need SNS or email permissions.
+reliability path is enabled.
 
 The `--platform linux/amd64 --provenance=false --sbom=false` flags are
 required for compatibility with Lambda container image manifests.

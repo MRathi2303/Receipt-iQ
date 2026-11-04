@@ -228,3 +228,15 @@ entry before finishing.
 - Deployment changes: renamed the Vercel project from `frontend` to `receipt-iq-live` and redeployed the production frontend.
 - Validation: `https://receipt-iq-live.vercel.app` returns HTTP 200 and serves the ReceiptIQ frontend; the AWS API endpoint is unchanged.
 - Remaining work/blockers: none. The previous generated URL may continue to resolve, but the canonical public URL is now https://receipt-iq-live.vercel.app.
+
+### 2026-11-04 00:08 IST — Copilot SDK in VS Code
+- Request: Provide three quantified, hiring-manager-ready resume bullets for ReceiptIQ.
+- Files changed: this work log only.
+- Validation: used verified project metrics only: 5 AWS pipeline services, 8/8 backend tests, 0 Hallmark lint failures, 2 production endpoints, and 0 always-on compute components.
+- Remaining work/blockers: none.
+
+### 2026-11-04 15:10 IST — Copilot SDK in VS Code
+- Request: Clean the local and GitHub repositories and make the project recruiter-presentable for DevOps and cloud engineering roles.
+- Files changed: README, AWS deployment runbook, processor documentation, frontend comment metadata, AI context, and removal of bundled agent skills, skill locks, Vercel state, editor settings, and generated local artifacts.
+- Validation: final tracked tree reduced to the application, infrastructure documentation, CI, and required continuity files; no recruiter-facing documentation contains Hallmark, Cinetic, Scroll Craft, ECS Fargate, SES, or SNS references; backend tests passed 8/8, Python and JavaScript syntax checks passed, Docker Compose validation passed, dependency audit passed the configured high-severity threshold, and staged diff check passed.
+- Remaining work/blockers: commit and push the synchronized final tree to GitHub.
