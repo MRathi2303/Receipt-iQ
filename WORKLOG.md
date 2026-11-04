@@ -245,4 +245,4 @@ entry before finishing.
 - Request: Rewrite project documentation in my own voice and replace the AWS manual setup guide with an infrastructure and resource-role reference.
 - Files changed: [README.md](README.md), [lambda_pdf_processor/README.md](lambda_pdf_processor/README.md), [infra/README.md](infra/README.md), [docs/AWS-INFRASTRUCTURE.md](docs/AWS-INFRASTRUCTURE.md), [AGENTS.md](AGENTS.md), [AI-CONTEXT.md](AI-CONTEXT.md), and this work log.
 - Validation: documentation links updated, README whitespace normalized, `git diff --check`, Python syntax, JavaScript syntax, Docker Compose configuration, and backend tests passed.
-- Remaining work/blockers: commit and push the documentation update.
+- Remaining work/blockers: none. The documentation update is published and local `main` matches GitHub `main`.
